@@ -289,9 +289,9 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Tag NFC no encontrado" });
       }
       
-      // Update last scanned time
+      // Update tag activity
       const updatedTag = await storage.updateNFCTag(tag.id, {
-        lastScanned: new Date(),
+        active: true,
       });
       
       res.json(updatedTag);
@@ -478,8 +478,8 @@ export function registerRoutes(app: Express): Server {
       if (nextPhase === "activacion_nfc") {
         const allCerts = await storage.getAllCertifications();
         const sequence = allCerts.length;
-        updates.nfcTag = generateNFCTag(sequence);
-        updates.blockchainHash = generateBlockchainHash();
+        updates.nfcTag = generateNFCTagUtil(sequence);
+        updates.blockchainHash = generateBlockchainHashUtil();
         updates.qrCode = `QR-${updates.nfcTag}`;
       }
       
@@ -593,8 +593,8 @@ export function registerRoutes(app: Express): Server {
       // Generate NFC/QR codes
       const allCerts = await storage.getAllCertifications();
       const sequence = allCerts.length;
-      const nfcTag = generateNFCTag(sequence);
-      const blockchainHash = generateBlockchainHash();
+      const nfcTag = generateNFCTagUtil(sequence);
+      const blockchainHash = generateBlockchainHashUtil();
       const qrCode = `QR-${nfcTag}`;
       
       // Update certification with scores and codes
@@ -671,7 +671,7 @@ export function registerRoutes(app: Express): Server {
     try {
       const eventData = {
         ...req.body,
-        blockchainHash: generateBlockchainHash(),
+        blockchainHash: generateBlockchainHashUtil(),
       };
       
       const validatedData = insertNFCEventSchema.parse(eventData);
@@ -866,7 +866,7 @@ export function registerRoutes(app: Express): Server {
       // Filter by role: proveedores only see their shipments
       if (role === 'proveedor') {
         // Get provider by user's RUT
-        const user = await storage.getUserById(userId!);
+        const user = await storage.getUser(userId!);
         if (!user || !user.rut) {
           return res.json([]);
         }
@@ -1212,8 +1212,8 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/products", requireAuth, async (req: Request, res: Response) => {
     try {
       const user = req.session.user;
-      if (user?.role === 'proveedor' && user.companyId) {
-        const provider = await storage.getProviderByRut(user.rut || '');
+      if (user?.role === 'proveedor' && user.rut) {
+        const provider = await storage.getProviderByRut(user.rut);
         if (provider) {
           const products = await storage.getProductsByProvider(provider.id);
           return res.json(products);
@@ -1421,7 +1421,7 @@ export function registerRoutes(app: Express): Server {
         ...req.body,
         scannedBy: user?.id,
         scannerName: user?.fullName || req.body.scannerName || "Anónimo",
-        scannerCompany: user?.companyId || req.body.scannerCompany,
+        scannerCompany: req.body.scannerCompany || "Anónimo",
       };
 
       const validation = await storage.createValidation(validationData);

@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { getDashboardForRole } from "@/lib/role-routing";
 import { useQuery } from "@tanstack/react-query";
 import logoUrl from "@assets/ChatGPT Image 3 nov 2025, 03_29_38 p.m._1762631913336.png";
+import miningEnergyImage from "@assets/generated_images/Mining_and_renewable_energy_scene_d4f6ed8e.png";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -47,39 +48,45 @@ export default function Login() {
     }
   };
 
-  const customImageUrl = loginConfig?.imageUrl;
+  const displayImageUrl = loginConfig?.imageUrl || miningEnergyImage;
 
   return (
     <div className="flex min-h-screen">
-      {/* Left side - Custom Image (solo si está configurada) */}
-      {customImageUrl && (
-        <div 
-          className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
-          style={{ 
-            backgroundImage: `url(${customImageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 backdrop-blur-[2px]" />
-          <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
-            <img 
-              src={logoUrl} 
-              alt="SICREP Logo" 
-              className="h-24 w-auto mb-8"
-            />
-            <h1 className="text-4xl font-bold mb-4 drop-shadow-lg">
-              {loginConfig?.title || "Sistema de Certificación REP"}
-            </h1>
-            <p className="text-lg text-white/90 max-w-md drop-shadow-md">
-              {loginConfig?.subtitle || "Plataforma profesional de trazabilidad NFC y gestión de cumplimiento ambiental según Ley 20.920"}
-            </p>
+      {/* Left side - Mining and Energy Image */}
+      <div 
+        className="hidden lg:flex lg:w-1/2 bg-cover bg-center relative"
+        style={{ 
+          backgroundImage: `url(${displayImageUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/20 to-black/40" />
+        <div className="relative z-10 flex flex-col justify-center items-start p-16 text-white">
+          <img 
+            src={logoUrl} 
+            alt="SICREP Logo" 
+            className="h-24 w-auto mb-8 drop-shadow-2xl"
+          />
+          <h1 className="text-5xl font-bold mb-4 drop-shadow-2xl">
+            {loginConfig?.title || "Sistema de Certificación REP"}
+          </h1>
+          <p className="text-xl text-white/95 max-w-md drop-shadow-lg font-medium">
+            {loginConfig?.subtitle || "Plataforma profesional de trazabilidad NFC y gestión de cumplimiento ambiental según Ley 20.920"}
+          </p>
+          <div className="mt-8 flex gap-4">
+            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+              <p className="text-sm font-semibold">Minería Sostenible</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
+              <p className="text-sm font-semibold">Energía Renovable</p>
+            </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Right side - Login Form */}
-      <div className={`flex-1 flex items-center justify-center p-8 bg-background ${!customImageUrl ? 'w-full' : ''}`}>
+      <div className="flex-1 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
           {/* Logo */}
           <div className="flex justify-center mb-8">

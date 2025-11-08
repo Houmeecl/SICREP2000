@@ -14,7 +14,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-4">¿Por qué SICREP?</h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             La plataforma más completa para certificación REP bajo Ley 20.920, 
-            especializada en la industria minera chilena.
+            especializada en la industria minera y energía chilena.
           </p>
         </div>
         
@@ -62,7 +62,7 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Reportes completos de impacto ambiental y sostenibilidad para minería
+                Reportes completos de impacto ambiental y sostenibilidad para minería y energía
               </p>
             </CardContent>
           </Card>
@@ -154,7 +154,7 @@ export default function Home() {
       <footer className="border-t mt-16 py-8">
         <div className="max-w-7xl mx-auto px-6 text-center text-sm text-muted-foreground">
           <p>© 2025 SICREP - Sistema de Certificación REP | Ley 20.920 - República de Chile</p>
-          <p className="mt-2">Especializado en Industria Minera • Trazabilidad NFC • Métricas ESG</p>
+          <p className="mt-2">Especializado en Industria Minera y Energía • Trazabilidad NFC • Métricas ESG</p>
         </div>
       </footer>
     </div>

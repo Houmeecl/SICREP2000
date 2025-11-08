@@ -171,8 +171,12 @@ export default function Manual() {
         </div>
       </div>
 
-      <Tabs defaultValue="empresas" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="arquitectura" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="arquitectura" data-testid="tab-arquitectura">
+            <BarChart3 className="w-4 h-4 mr-2" />
+            Arquitectura
+          </TabsTrigger>
           <TabsTrigger value="empresas" data-testid="tab-empresas">
             <Factory className="w-4 h-4 mr-2" />
             Grandes Empresas
@@ -186,6 +190,411 @@ export default function Manual() {
             Borradores
           </TabsTrigger>
         </TabsList>
+
+        {/* Tab para Arquitectura del Sistema */}
+        <TabsContent value="arquitectura" className="space-y-6">
+          {/* Diagrama de Arquitectura */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-6 h-6 text-primary" />
+                Arquitectura del Sistema SICREP
+              </CardTitle>
+              <CardDescription>
+                Diagrama de componentes, módulos y flujos de la plataforma
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Diagrama SVG de Arquitectura */}
+              <div className="border rounded-lg p-6 bg-muted/20">
+                <h3 className="text-lg font-semibold mb-4 text-center">Diagrama de Arquitectura</h3>
+                <svg viewBox="0 0 800 600" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+                  {/* Frontend Layer */}
+                  <rect x="50" y="50" width="700" height="100" fill="hsl(var(--primary))" fillOpacity="0.1" stroke="hsl(var(--primary))" strokeWidth="2" rx="8"/>
+                  <text x="400" y="85" textAnchor="middle" className="fill-foreground font-bold text-lg">CAPA FRONTEND</text>
+                  <text x="120" y="110" className="fill-foreground text-sm">React + TypeScript</text>
+                  <text x="350" y="110" className="fill-foreground text-sm">TanStack Query</text>
+                  <text x="550" y="110" className="fill-foreground text-sm">shadcn/ui</text>
+                  <text x="120" y="130" className="fill-foreground text-sm">Wouter Router</text>
+                  <text x="350" y="130" className="fill-foreground text-sm">Vite Build</text>
+                  <text x="550" y="130" className="fill-foreground text-sm">Tailwind CSS</text>
+                  
+                  {/* Backend Layer */}
+                  <rect x="50" y="200" width="700" height="100" fill="hsl(var(--accent))" fillOpacity="0.1" stroke="hsl(var(--accent))" strokeWidth="2" rx="8"/>
+                  <text x="400" y="235" textAnchor="middle" className="fill-foreground font-bold text-lg">CAPA BACKEND</text>
+                  <text x="120" y="260" className="fill-foreground text-sm">Express.js</text>
+                  <text x="300" y="260" className="fill-foreground text-sm">REST API</text>
+                  <text x="450" y="260" className="fill-foreground text-sm">bcrypt Auth</text>
+                  <text x="600" y="260" className="fill-foreground text-sm">PDF Generator</text>
+                  <text x="120" y="280" className="fill-foreground text-sm">Drizzle ORM</text>
+                  <text x="300" y="280" className="fill-foreground text-sm">Storage Layer</text>
+                  <text x="450" y="280" className="fill-foreground text-sm">ESG Calculator</text>
+                  <text x="600" y="280" className="fill-foreground text-sm">QR Generator</text>
+                  
+                  {/* Database Layer */}
+                  <rect x="50" y="350" width="340" height="100" fill="hsl(var(--chart-1))" fillOpacity="0.1" stroke="hsl(var(--chart-1))" strokeWidth="2" rx="8"/>
+                  <text x="220" y="385" textAnchor="middle" className="fill-foreground font-bold text-lg">BASE DE DATOS</text>
+                  <text x="100" y="410" className="fill-foreground text-sm">PostgreSQL (Neon)</text>
+                  <text x="100" y="430" className="fill-foreground text-sm">15+ Tablas</text>
+                  
+                  {/* Blockchain Layer */}
+                  <rect x="410" y="350" width="340" height="100" fill="hsl(var(--chart-2))" fillOpacity="0.1" stroke="hsl(var(--chart-2))" strokeWidth="2" rx="8"/>
+                  <text x="580" y="385" textAnchor="middle" className="fill-foreground font-bold text-lg">TRAZABILIDAD</text>
+                  <text x="460" y="410" className="fill-foreground text-sm">Blockchain (Polygon)</text>
+                  <text x="460" y="430" className="fill-foreground text-sm">NFC Tags + QR Codes</text>
+                  
+                  {/* External Integrations */}
+                  <rect x="50" y="500" width="700" height="60" fill="hsl(var(--chart-3))" fillOpacity="0.1" stroke="hsl(var(--chart-3))" strokeWidth="2" rx="8"/>
+                  <text x="400" y="525" textAnchor="middle" className="fill-foreground font-bold text-lg">INTEGRACIONES EXTERNAS</text>
+                  <text x="150" y="545" className="fill-foreground text-sm">RETC</text>
+                  <text x="320" y="545" className="fill-foreground text-sm">Copper Mark</text>
+                  <text x="500" y="545" className="fill-foreground text-sm">Replit Auth</text>
+                  <text x="650" y="545" className="fill-foreground text-sm">Email</text>
+                  
+                  {/* Arrows */}
+                  <path d="M 400 150 L 400 200" stroke="hsl(var(--muted-foreground))" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                  <path d="M 220 300 L 220 350" stroke="hsl(var(--muted-foreground))" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                  <path d="M 580 300 L 580 350" stroke="hsl(var(--muted-foreground))" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                  <path d="M 220 450 L 220 500" stroke="hsl(var(--muted-foreground))" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                  <path d="M 580 450 L 580 500" stroke="hsl(var(--muted-foreground))" strokeWidth="2" markerEnd="url(#arrowhead)"/>
+                  
+                  <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                      <polygon points="0 0, 10 5, 0 10" fill="hsl(var(--muted-foreground))" />
+                    </marker>
+                  </defs>
+                </svg>
+              </div>
+
+              {/* Módulos y Paneles del Sistema */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Módulos y Paneles Disponibles</h3>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-primary" />
+                        Dashboard
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Métricas clave</li>
+                        <li>• Actividad reciente</li>
+                        <li>• Alertas de capacidad</li>
+                        <li>• KPIs ESG</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Award className="w-4 h-4 text-primary" />
+                        Certificaciones
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Gestión de solicitudes</li>
+                        <li>• Workflow 10 fases</li>
+                        <li>• Generación de PDFs</li>
+                        <li>• Historial completo</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Factory className="w-4 h-4 text-primary" />
+                        Proveedores
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Directorio certificado</li>
+                        <li>• Control 300kg/año</li>
+                        <li>• Estados y alertas</li>
+                        <li>• Métricas individuales</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <FileCheck className="w-4 h-4 text-primary" />
+                        CPS Catalog
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Catálogo de productos</li>
+                        <li>• Especificaciones REP</li>
+                        <li>• Códigos únicos CPS</li>
+                        <li>• Reciclabilidad</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Leaf className="w-4 h-4 text-primary" />
+                        ESG Metrics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• CO₂ evitado</li>
+                        <li>• Tasa reciclabilidad</li>
+                        <li>• Agua conservada</li>
+                        <li>• Energía renovable</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <BarChart3 className="w-4 h-4 text-primary" />
+                        Trazabilidad NFC
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Tags NFC únicos</li>
+                        <li>• Eventos de escaneo</li>
+                        <li>• Blockchain hash</li>
+                        <li>• Pasaporte digital</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-primary" />
+                        Despachos
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Envíos certificados</li>
+                        <li>• Componentes embalaje</li>
+                        <li>• QR por despacho</li>
+                        <li>• Control de peso</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Users className="w-4 h-4 text-primary" />
+                        Gestión Usuarios
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• 15+ roles disponibles</li>
+                        <li>• Control de acceso (RBAC)</li>
+                        <li>• Paneles personalizados</li>
+                        <li>• Auditoría de actividad</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-primary/30 hover-elevate">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-primary" />
+                        Reportes
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="text-xs space-y-1 text-muted-foreground">
+                        <li>• Informes ESG</li>
+                        <li>• Exportación CSV</li>
+                        <li>• PDFs oficiales</li>
+                        <li>• SICREP Insights</li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Flujos de Trabajo */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Flujos de Trabajo Principales</h3>
+                <div className="space-y-4">
+                  {/* Flujo de Certificación */}
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-base">Flujo de Certificación REP (10 Fases)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        {[
+                          { id: 1, name: "Solicitud", icon: "📝" },
+                          { id: 2, name: "Asignación CPS", icon: "📋" },
+                          { id: 3, name: "Eval. Docs", icon: "📄" },
+                          { id: 4, name: "Eval. Operativa", icon: "🏭" },
+                          { id: 5, name: "Eval. Valor", icon: "💎" },
+                          { id: 6, name: "Revisión Final", icon: "✅" },
+                          { id: 7, name: "Emisión Cert.", icon: "🏆" },
+                          { id: 8, name: "Activación NFC", icon: "📡" },
+                          { id: 9, name: "Publicación", icon: "📢" },
+                          { id: 10, name: "Monitoreo", icon: "📊" },
+                        ].map((step, idx) => (
+                          <div key={step.id} className="flex items-center">
+                            <div className="flex flex-col items-center min-w-[100px]">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-lg">
+                                {step.icon}
+                              </div>
+                              <p className="text-xs mt-2 text-center font-medium">{step.name}</p>
+                            </div>
+                            {idx < 9 && (
+                              <div className="text-primary text-xl mx-2">→</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Flujo de Trazabilidad NFC */}
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-base">Flujo de Trazabilidad NFC</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        {[
+                          { id: 1, name: "Generación Tag", icon: "🏷️" },
+                          { id: 2, name: "Asignación", icon: "🔗" },
+                          { id: 3, name: "Blockchain", icon: "⛓️" },
+                          { id: 4, name: "Escaneo NFC/QR", icon: "📱" },
+                          { id: 5, name: "Validación", icon: "✓" },
+                          { id: 6, name: "Registro Evento", icon: "📝" },
+                        ].map((step, idx) => (
+                          <div key={step.id} className="flex items-center">
+                            <div className="flex flex-col items-center min-w-[100px]">
+                              <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-lg">
+                                {step.icon}
+                              </div>
+                              <p className="text-xs mt-2 text-center font-medium">{step.name}</p>
+                            </div>
+                            {idx < 5 && (
+                              <div className="text-accent text-xl mx-2">→</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Flujo de Despacho */}
+                  <Card className="border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="text-base">Flujo de Despacho Certificado</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        {[
+                          { id: 1, name: "Crear Despacho", icon: "📦" },
+                          { id: 2, name: "Agregar Componentes", icon: "🧩" },
+                          { id: 3, name: "Calcular Métricas", icon: "📊" },
+                          { id: 4, name: "Certificar", icon: "✅" },
+                          { id: 5, name: "Generar QR", icon: "📱" },
+                          { id: 6, name: "Envío", icon: "🚛" },
+                        ].map((step, idx) => (
+                          <div key={step.id} className="flex items-center">
+                            <div className="flex flex-col items-center min-w-[100px]">
+                              <div className="w-10 h-10 rounded-full bg-chart-1/20 flex items-center justify-center text-lg">
+                                {step.icon}
+                              </div>
+                              <p className="text-xs mt-2 text-center font-medium">{step.name}</p>
+                            </div>
+                            {idx < 5 && (
+                              <div className="text-chart-1 text-xl mx-2">→</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Roles del Sistema */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Roles y Permisos del Sistema</h3>
+                <div className="grid md:grid-cols-4 gap-3">
+                  {[
+                    { role: "Admin", desc: "Control total del sistema", color: "text-red-500" },
+                    { role: "Gerente General", desc: "Supervisión ejecutiva", color: "text-orange-500" },
+                    { role: "Manager Operaciones", desc: "Gestión operativa", color: "text-yellow-500" },
+                    { role: "CPS", desc: "Coordinador de producto", color: "text-green-500" },
+                    { role: "Evaluador", desc: "Evaluación técnica", color: "text-blue-500" },
+                    { role: "Auditor", desc: "Auditorías y compliance", color: "text-indigo-500" },
+                    { role: "Comité", desc: "Revisión y aprobación", color: "text-purple-500" },
+                    { role: "Proveedor", desc: "Gestión de productos", color: "text-pink-500" },
+                    { role: "Cliente Minería", desc: "Acceso a certificados", color: "text-cyan-500" },
+                    { role: "Viewer", desc: "Solo lectura", color: "text-gray-500" },
+                    { role: "Analista", desc: "Reportes y métricas", color: "text-teal-500" },
+                    { role: "Coordinador", desc: "Coordinación general", color: "text-lime-500" },
+                    { role: "Técnico", desc: "Soporte técnico", color: "text-amber-500" },
+                    { role: "Inspector", desc: "Inspección y validación", color: "text-emerald-500" },
+                    { role: "Supervisor", desc: "Supervisión operativa", color: "text-sky-500" },
+                  ].map((item) => (
+                    <Badge key={item.role} variant="outline" className={`justify-start py-2 px-3 ${item.color}`}>
+                      <div>
+                        <p className="font-semibold text-xs">{item.role}</p>
+                        <p className="text-[10px] opacity-70 font-normal">{item.desc}</p>
+                      </div>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modelo de Pricing */}
+              <Card className="bg-primary/5 border-primary/30">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Modelo de Pricing SICREP
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-2">Setup Inicial</h4>
+                      <p className="text-3xl font-bold text-primary mb-1">15 UF</p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Onboarding completo</li>
+                        <li>• Configuración de empresa</li>
+                        <li>• Capacitación de usuarios</li>
+                        <li>• Migración de datos</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Operación Mensual</h4>
+                      <p className="text-3xl font-bold text-primary mb-1">5 UF/mes</p>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        <li>• Certificaciones ilimitadas</li>
+                        <li>• Soporte técnico incluido</li>
+                        <li>• Actualizaciones automáticas</li>
+                        <li>• Trazabilidad blockchain</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Tab para Grandes Empresas Mineras */}
         <TabsContent value="empresas" className="space-y-6">
