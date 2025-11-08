@@ -323,7 +323,7 @@ export function registerRoutes(app: Express): Server {
 
   app.get("/api/providers/me", requireAuth, async (req: Request, res: Response) => {
     try {
-      const user = (req as any).user;
+      const user = req.session.user;
       if (!user || !user.rut) {
         return res.status(404).json({ message: "Usuario sin RUT asociado" });
       }
