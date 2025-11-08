@@ -1,9 +1,25 @@
 import { db } from "./db";
-import { users, providers, cpsCatalog, certifications, workflowHistory, nfcEvents, esgMetrics, activityLog } from "@shared/schema";
+import { users, providers, cpsCatalog, certifications, workflowHistory, nfcEvents, esgMetrics, activityLog, companies, nfcTags, shipments, packagingComponents } from "@shared/schema";
 import bcrypt from "bcrypt";
 
 async function seed() {
   console.log("Seeding database...");
+
+  // Clear existing data (order matters - delete child tables first)
+  console.log("Clearing existing data...");
+  await db.delete(nfcEvents);
+  await db.delete(workflowHistory);
+  await db.delete(packagingComponents);
+  await db.delete(shipments);
+  await db.delete(certifications);
+  await db.delete(activityLog);
+  await db.delete(esgMetrics);
+  await db.delete(nfcTags);
+  await db.delete(cpsCatalog);
+  await db.delete(providers);
+  await db.delete(companies);
+  await db.delete(users);
+  console.log("✓ Data cleared");
 
   // Create admin user
   const hashedPassword = await bcrypt.hash("admin123", 10);
