@@ -18,30 +18,45 @@ export default function TraceabilityLanding() {
     if (!searchCode.trim()) return;
 
     setIsSearching(true);
+    setSearchResult(null);
+    setSearchWorkflow([]);
+    setSearchNFCEvents([]);
+
     try {
       const response = await fetch(`/api/certifications?code=${searchCode}`);
+      if (!response.ok) {
+        throw new Error('Error al buscar certificación');
+      }
       const data = await response.json();
       
       if (data.length > 0) {
         const cert = data[0];
         setSearchResult(cert);
         
-        // Obtener workflow history
-        const workflowRes = await fetch(`/api/workflow-history?certificationId=${cert.id}`);
-        const workflowData = await workflowRes.json();
-        setSearchWorkflow(workflowData);
-        
-        // Obtener eventos NFC
-        const nfcRes = await fetch(`/api/nfc-events?certificationId=${cert.id}`);
-        const nfcData = await nfcRes.json();
-        setSearchNFCEvents(nfcData);
-      } else {
-        setSearchResult(null);
-        setSearchWorkflow([]);
-        setSearchNFCEvents([]);
+        // Obtener workflow history y NFC events en paralelo
+        try {
+          const [workflowRes, nfcRes] = await Promise.all([
+            fetch(`/api/certifications/${cert.id}/history`),
+            fetch(`/api/certifications/${cert.id}/nfc-events`)
+          ]);
+          
+          if (workflowRes.ok) {
+            const workflowData = await workflowRes.json();
+            setSearchWorkflow(workflowData);
+          }
+          
+          if (nfcRes.ok) {
+            const nfcData = await nfcRes.json();
+            setSearchNFCEvents(nfcData);
+          }
+        } catch (historyError) {
+          console.error("Error loading history/NFC events:", historyError);
+          // Continue showing certification even if history fails
+        }
       }
     } catch (error) {
       console.error("Error searching certification:", error);
+      setSearchResult(null);
     } finally {
       setIsSearching(false);
     }
@@ -116,50 +131,7 @@ export default function TraceabilityLanding() {
                 </div>
               </div>
 
-              {/* Search Result */}
-              {searchResult && (
-                <div className="mt-6 p-6 bg-green-50 dark:bg-green-950 rounded-lg border-2 border-green-500">
-                  <div className="flex items-start gap-4">
-                    <CheckCircle className="h-8 w-8 text-green-600 flex-shrink-0 mt-1" />
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <h3 className="text-xl font-bold text-green-900 dark:text-green-100">
-                          ✓ Certificación Verificada
-                        </h3>
-                        <p className="text-green-700 dark:text-green-300">
-                          Este producto cuenta con certificación REP válida
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <div className="text-muted-foreground">Código</div>
-                          <div className="font-bold">{searchResult.code}</div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Estado</div>
-                          <Badge variant="default" className="bg-green-600">
-                            {searchResult.status}
-                          </Badge>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Fecha Certificación</div>
-                          <div className="font-semibold">
-                            {new Date(searchResult.createdAt).toLocaleDateString('es-CL')}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-muted-foreground">Blockchain</div>
-                          <div className="font-mono text-xs truncate">
-                            {searchResult.blockchainHash?.substring(0, 20)}...
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
+              {/* Not Found Message */}
               {searchResult === null && searchCode && !isSearching && (
                 <div className="mt-6 p-6 bg-red-50 dark:bg-red-950 rounded-lg border-2 border-red-500">
                   <div className="text-center">
@@ -174,6 +146,187 @@ export default function TraceabilityLanding() {
               )}
             </CardContent>
           </Card>
+
+          {/* Detailed Results Section */}
+          {searchResult && (
+            <div className="w-full max-w-6xl space-y-6 mt-8">
+              {/* Verification Status Card */}
+              <Card className="border-2 border-green-500 bg-green-50 dark:bg-green-950">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-4 bg-green-600 rounded-full">
+                      <CheckCircle className="h-10 w-10 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-3xl font-bold text-green-900 dark:text-green-100 mb-1">
+                        ✓ Certificación Verificada
+                      </h2>
+                      <p className="text-green-700 dark:text-green-300 text-lg">
+                        Este producto cuenta con certificación REP válida bajo Ley 20.920
+                      </p>
+                    </div>
+                    <Badge className="bg-green-600 text-white text-lg px-4 py-2">
+                      {searchResult.status}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Certification Details Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Award className="w-5 h-5 text-primary" />
+                      Información de Certificación
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">Código REP</span>
+                      <span className="font-mono font-bold text-lg">{searchResult.code}</span>
+                    </div>
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">Fecha Emisión</span>
+                      <span className="font-semibold">{new Date(searchResult.createdAt).toLocaleDateString('es-CL')}</span>
+                    </div>
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">CPS Asignado</span>
+                      <span className="font-semibold">{searchResult.cpsCode || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="text-muted-foreground">Fase Actual</span>
+                      <Badge variant="outline">{searchResult.currentPhase}</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Lock className="w-5 h-5 text-primary" />
+                      Seguridad Blockchain
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">Hash Blockchain</span>
+                      <span className="font-mono text-xs">{searchResult.blockchainHash?.substring(0, 12)}...</span>
+                    </div>
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">Tag NFC</span>
+                      <span className="font-mono text-xs">{searchResult.nfcTagId || 'Pendiente'}</span>
+                    </div>
+                    <div className="flex justify-between items-start border-b pb-3">
+                      <span className="text-muted-foreground">QR Code</span>
+                      <span className="font-mono text-xs">{searchResult.qrCode?.substring(0, 12)}...</span>
+                    </div>
+                    <div className="p-3 bg-primary/10 rounded-lg flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-primary" />
+                      <span className="text-sm">Inmutable y verificable públicamente</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Workflow Timeline */}
+              {searchWorkflow.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GitBranch className="w-5 h-5 text-primary" />
+                      Historial de Certificación
+                    </CardTitle>
+                    <CardDescription>Timeline completo del proceso de certificación REP</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="relative">
+                      {/* Timeline vertical line */}
+                      <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+                      
+                      <div className="space-y-6">
+                        {searchWorkflow.map((event, idx) => (
+                          <div key={event.id} className="relative flex items-start gap-4">
+                            {/* Timeline dot */}
+                            <div className={`relative z-10 p-3 rounded-full ${
+                              idx === 0 ? 'bg-primary' : 'bg-muted'
+                            }`}>
+                              <Calendar className={`w-4 h-4 ${
+                                idx === 0 ? 'text-primary-foreground' : 'text-muted-foreground'
+                              }`} />
+                            </div>
+                            
+                            {/* Event content */}
+                            <div className="flex-1 pb-6">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h4 className="font-semibold text-lg">{event.toPhase}</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {new Date(event.timestamp).toLocaleString('es-CL')}
+                                  </p>
+                                </div>
+                                <Badge variant={idx === 0 ? "default" : "outline"}>
+                                  {event.fromPhase} → {event.toPhase}
+                                </Badge>
+                              </div>
+                              {event.notes && (
+                                <p className="text-sm text-muted-foreground mt-2 p-3 bg-muted rounded-md">
+                                  {event.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* NFC Events Timeline */}
+              {searchNFCEvents.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Scan className="w-5 h-5 text-primary" />
+                      Eventos de Trazabilidad NFC
+                    </CardTitle>
+                    <CardDescription>Historial de escaneos y validaciones del tag NFC</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {searchNFCEvents.map((event, idx) => (
+                        <div key={event.id} className="flex items-start gap-4 p-4 bg-muted rounded-lg hover-elevate">
+                          <div className="p-2 bg-primary/10 rounded-full">
+                            <MapPin className="w-5 h-5 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-1">
+                              <h4 className="font-semibold">{event.eventType}</h4>
+                              <span className="text-sm text-muted-foreground">
+                                {new Date(event.timestamp).toLocaleString('es-CL')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <User className="w-3 h-3" />
+                              <span>{event.scannedBy || 'Sistema'}</span>
+                              {event.location && (
+                                <>
+                                  <span>•</span>
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{event.location}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {/* Features Grid */}
           <div className="w-full max-w-5xl mt-16">
