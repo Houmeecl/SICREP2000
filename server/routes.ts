@@ -201,6 +201,16 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Dashboard Statistics
+  app.get("/api/dashboard/stats", requireAuth, async (_req: Request, res: Response) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      res.json(stats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Companies routes
   app.get("/api/companies", requireAuth, async (_req: Request, res: Response) => {
     try {
@@ -306,6 +316,22 @@ export function registerRoutes(app: Express): Server {
     try {
       const providers = await storage.getAllProviders();
       res.json(providers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/providers/me", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      if (!user || !user.rut) {
+        return res.status(404).json({ message: "Usuario sin RUT asociado" });
+      }
+      const provider = await storage.getProviderByRut(user.rut);
+      if (!provider) {
+        return res.status(404).json({ message: "Proveedor no encontrado" });
+      }
+      res.json(provider);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

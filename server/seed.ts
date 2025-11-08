@@ -39,13 +39,14 @@ async function seed() {
     active: true,
   }).returning();
 
-  // Create DEMO user (proveedor role)
+  // Create DEMO user (proveedor role) - asociado a "Envases del Norte S.A."
   const demoPassword = await bcrypt.hash("demo123", 10);
   const [demoUser] = await db.insert(users).values({
     username: "sicrep@sicrep.cl",
     password: demoPassword,
     email: "sicrep@sicrep.cl",
     fullName: "Usuario Demo SICREP",
+    rut: "76.543.210-K",
     role: "proveedor",
     active: true,
   }).returning();

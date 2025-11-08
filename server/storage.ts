@@ -45,6 +45,7 @@ export interface IStorage {
 
   // Providers
   getProvider(id: string): Promise<Provider | undefined>;
+  getProviderByRut(rut: string): Promise<Provider | undefined>;
   getAllProviders(): Promise<Provider[]>;
   createProvider(provider: InsertProvider): Promise<Provider>;
   updateProvider(id: string, provider: Partial<InsertProvider>): Promise<Provider | undefined>;
@@ -94,6 +95,14 @@ export interface IStorage {
   // Login Configuration
   getLoginConfig(): Promise<LoginConfig | undefined>;
   upsertLoginConfig(config: InsertLoginConfig): Promise<LoginConfig>;
+
+  // Dashboard Statistics
+  getDashboardStats(): Promise<{
+    activeCertifications: number;
+    totalProviders: number;
+    totalCertifiedPackages: number;
+    capacityAlerts: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -185,6 +194,11 @@ export class DatabaseStorage implements IStorage {
   // Providers
   async getProvider(id: string): Promise<Provider | undefined> {
     const [provider] = await db.select().from(providers).where(eq(providers.id, id));
+    return provider;
+  }
+
+  async getProviderByRut(rut: string): Promise<Provider | undefined> {
+    const [provider] = await db.select().from(providers).where(eq(providers.rut, rut));
     return provider;
   }
 
@@ -350,6 +364,26 @@ export class DatabaseStorage implements IStorage {
       const [created] = await db.insert(loginConfig).values(config).returning();
       return created;
     }
+  }
+
+  // Dashboard Statistics
+  async getDashboardStats() {
+    const allCertifications = await db.select().from(certifications);
+    const allProviders = await db.select().from(providers);
+    const allShipments = await db.select().from(shipments);
+    
+    const activeCertifications = allCertifications.filter(c => 
+      c.status === 'publicado' || c.status === 'activacion_nfc' || c.status === 'emision_certificado'
+    ).length;
+
+    const capacityAlerts = allProviders.filter(p => p.status === 'warning' || p.status === 'critical').length;
+
+    return {
+      activeCertifications,
+      totalProviders: allProviders.length,
+      totalCertifiedPackages: allShipments.length,
+      capacityAlerts,
+    };
   }
 }
 
