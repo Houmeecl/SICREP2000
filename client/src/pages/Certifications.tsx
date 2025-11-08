@@ -5,45 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, FileCheck, Download } from "lucide-react";
 import { useState } from "react";
-
-interface Certification {
-  id: string;
-  code: string;
-  provider: string;
-  cps: string;
-  status: "active" | "in-progress" | "expired" | "pending";
-  score: number;
-  date: string;
-}
+import { useQuery } from "@tanstack/react-query";
 
 export default function Certifications() {
   const [searchTerm, setSearchTerm] = useState("");
   
-  //todo: remove mock functionality
-  const certifications: Certification[] = [
-    { id: "1", code: "CERT-CL-2025-000127", provider: "Envases del Norte S.A.", cps: "CPS-2025-001", status: "active", score: 92, date: "2025-01-15" },
-    { id: "2", code: "CERT-CL-2025-000126", provider: "EcoPack Solutions", cps: "CPS-2025-002", status: "active", score: 88, date: "2025-01-14" },
-    { id: "3", code: "CERT-CL-2025-000125", provider: "Packaging Industrial Chile", cps: "CPS-2024-128", status: "in-progress", score: 65, date: "2025-01-13" },
-    { id: "4", code: "CERT-CL-2024-000089", provider: "Embalajes Sustentables Ltda.", cps: "CPS-2024-089", status: "active", score: 95, date: "2024-12-20" },
-    { id: "5", code: "CERT-CL-2024-000055", provider: "Green Pack SpA", cps: "CPS-2024-055", status: "expired", score: 78, date: "2024-11-10" },
-  ];
+  const { data: certifications = [] } = useQuery<any[]>({
+    queryKey: ["/api/certifications"],
+  });
 
-  const filteredCerts = certifications.filter(cert =>
-    cert.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.provider.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.cps.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCerts = certifications.filter((cert: any) =>
+    cert.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusBadge = (status: Certification["status"]) => {
-    switch (status) {
-      case "active":
-        return <Badge variant="default">Activo</Badge>;
-      case "in-progress":
-        return <Badge variant="secondary">En Proceso</Badge>;
-      case "expired":
-        return <Badge variant="destructive">Expirado</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pendiente</Badge>;
+  const getStatusBadge = (status: string) => {
+    if (status === "publicado" || status === "monitoreo_continuo") {
+      return <Badge variant="default">Activo</Badge>;
+    } else if (status === "rechazado" || status === "expirado") {
+      return <Badge variant="destructive">Expirado</Badge>;
+    } else {
+      return <Badge variant="secondary">En Proceso</Badge>;
     }
   };
 
@@ -82,7 +63,7 @@ export default function Certifications() {
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {filteredCerts.map((cert) => (
+            {filteredCerts.map((cert: any) => (
               <div
                 key={cert.id}
                 className="flex items-center gap-4 p-4 rounded-md border hover-elevate"
@@ -98,16 +79,14 @@ export default function Certifications() {
                     {getStatusBadge(cert.status)}
                   </div>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-medium">{cert.provider}</span>
+                    <span className="font-medium">Proveedor ID: {cert.providerId.slice(0, 8)}...</span>
                     <span className="text-muted-foreground">•</span>
-                    <code className="text-muted-foreground font-mono text-xs">{cert.cps}</code>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">{cert.date}</span>
+                    <span className="text-muted-foreground">{new Date(cert.createdAt).toLocaleDateString('es-CL')}</span>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-2xl font-bold font-mono">{cert.score}</div>
+                  <div className="text-2xl font-bold font-mono">{cert.scoreTotal || 0}</div>
                   <div className="text-xs text-muted-foreground">puntos</div>
                 </div>
                 
@@ -120,7 +99,7 @@ export default function Certifications() {
           
           {filteredCerts.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
-              No se encontraron certificaciones para "{searchTerm}"
+              {searchTerm ? `No se encontraron certificaciones para "${searchTerm}"` : "No hay certificaciones registradas"}
             </div>
           )}
         </CardContent>

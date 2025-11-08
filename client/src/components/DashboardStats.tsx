@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileCheck, Users, Package, TrendingUp, AlertCircle } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 interface StatCardProps {
   title: string;
@@ -36,11 +37,14 @@ function StatCard({ title, value, change, trend, icon, status = "default" }: Sta
 }
 
 export default function DashboardStats() {
-  //todo: remove mock functionality
-  const stats = [
+  const { data: stats } = useQuery<any>({
+    queryKey: ["/api/dashboard/stats"],
+  });
+
+  const statsData = [
     {
       title: "Certificaciones Activas",
-      value: "127",
+      value: stats?.activeCertifications?.toString() || "0",
       change: "+12 este mes",
       trend: "up" as const,
       icon: <FileCheck className="w-4 h-4" />,
@@ -48,21 +52,21 @@ export default function DashboardStats() {
     },
     {
       title: "Proveedores Registrados",
-      value: "45",
+      value: stats?.totalProviders?.toString() || "0",
       change: "+3 nuevos",
       trend: "up" as const,
       icon: <Users className="w-4 h-4" />,
     },
     {
       title: "Envases Certificados",
-      value: "8,432",
+      value: stats?.totalCertifiedPackages?.toString() || "0",
       change: "+245 hoy",
       trend: "up" as const,
       icon: <Package className="w-4 h-4" />,
     },
     {
       title: "Alertas de Capacidad",
-      value: "3",
+      value: stats?.capacityAlerts?.toString() || "0",
       change: "Límite 300kg/año",
       icon: <AlertCircle className="w-4 h-4" />,
       status: "warning" as const,
@@ -71,7 +75,7 @@ export default function DashboardStats() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat, index) => (
+      {statsData.map((stat, index) => (
         <StatCard key={index} {...stat} />
       ))}
     </div>

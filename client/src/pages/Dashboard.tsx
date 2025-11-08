@@ -4,15 +4,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, Calendar, FileText, TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
-  //todo: remove mock functionality
-  const recentActivity = [
-    { id: "1", type: "Certificación", title: "CERT-CL-2025-000127 aprobada", time: "Hace 2 horas", status: "success" },
-    { id: "2", type: "Alerta", title: "Proveedor Packaging Industrial cerca del límite", time: "Hace 3 horas", status: "warning" },
-    { id: "3", type: "NFC", title: "Nuevo escaneo en Faena Escondida", time: "Hace 5 horas", status: "info" },
-    { id: "4", type: "Evaluación", title: "Evaluación documentos en curso CPS-2025-042", time: "Hace 6 horas", status: "info" },
-  ];
+  const { data: activities = [] } = useQuery<any[]>({
+    queryKey: ["/api/activity"],
+  });
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "Certificación":
+        return <FileText className="w-4 h-4" />;
+      case "Alerta":
+        return <Bell className="w-4 h-4" />;
+      default:
+        return <TrendingUp className="w-4 h-4" />;
+    }
+  };
+
+  const getActivityColor = (status: string) => {
+    switch (status) {
+      case "success":
+        return "bg-primary/10 text-primary";
+      case "warning":
+        return "bg-destructive/10 text-destructive";
+      default:
+        return "bg-chart-2/10 text-chart-2";
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -41,35 +60,37 @@ export default function Dashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 p-3 rounded-md border hover-elevate"
-                  data-testid={`activity-${activity.id}`}
-                >
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    activity.status === "success" ? "bg-primary/10 text-primary" :
-                    activity.status === "warning" ? "bg-destructive/10 text-destructive" :
-                    "bg-chart-2/10 text-chart-2"
-                  }`}>
-                    {activity.status === "success" ? <FileText className="w-4 h-4" /> :
-                     activity.status === "warning" ? <Bell className="w-4 h-4" /> :
-                     <TrendingUp className="w-4 h-4" />}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="secondary" className="text-xs">
-                        {activity.type}
-                      </Badge>
+            {activities.length > 0 ? (
+              <div className="space-y-3">
+                {activities.map((activity: any) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 p-3 rounded-md border hover-elevate"
+                    data-testid={`activity-${activity.id}`}
+                  >
+                    <div className={`flex items-center justify-center w-8 h-8 rounded-full ${getActivityColor(activity.status)}`}>
+                      {getActivityIcon(activity.type)}
                     </div>
-                    <p className="text-sm font-medium">{activity.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{activity.time}</p>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {activity.type}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-medium">{activity.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {new Date(activity.createdAt).toLocaleString('es-CL')}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay actividad reciente
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
