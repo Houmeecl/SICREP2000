@@ -13,11 +13,15 @@ import {
   type ActivityLog, type InsertActivityLog,
   type Shipment, type InsertShipment,
   type PackagingComponent, type InsertPackagingComponent,
+  type ProductCatalog, type InsertProductCatalog,
+  type ProductionBatch, type InsertProductionBatch,
+  type NFCValidation, type InsertNFCValidation,
   type CertificationDocument, type InsertCertificationDocument,
   type LoginConfig, type InsertLoginConfig,
   users, companies, nfcTags, providers, cpsCatalog, certifications,
   workflowHistory, nfcEvents, esgMetrics, activityLog,
-  shipments, packagingComponents, certificationDocuments, loginConfig
+  shipments, packagingComponents, productCatalog, productionBatches, nfcValidations,
+  certificationDocuments, loginConfig
 } from "@shared/schema";
 
 export interface IStorage {
@@ -97,6 +101,31 @@ export interface IStorage {
   getCertificationDocuments(certificationId?: string, providerId?: string): Promise<CertificationDocument[]>;
   createCertificationDocument(doc: InsertCertificationDocument): Promise<CertificationDocument>;
   deleteCertificationDocument(id: string): Promise<void>;
+
+  // Product Catalog
+  getProduct(id: string): Promise<ProductCatalog | undefined>;
+  getProductByCode(code: string): Promise<ProductCatalog | undefined>;
+  getProductsByProvider(providerId: string): Promise<ProductCatalog[]>;
+  getAllProducts(): Promise<ProductCatalog[]>;
+  createProduct(product: InsertProductCatalog): Promise<ProductCatalog>;
+  updateProduct(id: string, product: Partial<InsertProductCatalog>): Promise<ProductCatalog | undefined>;
+
+  // Production Batches
+  getBatch(id: string): Promise<ProductionBatch | undefined>;
+  getBatchByCode(code: string): Promise<ProductionBatch | undefined>;
+  getBatchesByProvider(providerId: string): Promise<ProductionBatch[]>;
+  getBatchesByProduct(productId: string): Promise<ProductionBatch[]>;
+  getAllBatches(): Promise<ProductionBatch[]>;
+  createBatch(batch: InsertProductionBatch): Promise<ProductionBatch>;
+  updateBatch(id: string, batch: Partial<InsertProductionBatch>): Promise<ProductionBatch | undefined>;
+
+  // NFC Validations
+  getValidation(id: string): Promise<NFCValidation | undefined>;
+  getValidationsByTag(tagId: string): Promise<NFCValidation[]>;
+  getValidationsByBatch(batchId: string): Promise<NFCValidation[]>;
+  getValidationsByShipment(shipmentId: string): Promise<NFCValidation[]>;
+  getAllValidations(): Promise<NFCValidation[]>;
+  createValidation(validation: InsertNFCValidation): Promise<NFCValidation>;
 
   // Login Configuration
   getLoginConfig(): Promise<LoginConfig | undefined>;
@@ -368,6 +397,95 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCertificationDocument(id: string): Promise<void> {
     await db.delete(certificationDocuments).where(eq(certificationDocuments.id, id));
+  }
+
+  // Product Catalog
+  async getProduct(id: string): Promise<ProductCatalog | undefined> {
+    const [product] = await db.select().from(productCatalog).where(eq(productCatalog.id, id));
+    return product;
+  }
+
+  async getProductByCode(code: string): Promise<ProductCatalog | undefined> {
+    const [product] = await db.select().from(productCatalog).where(eq(productCatalog.code, code));
+    return product;
+  }
+
+  async getProductsByProvider(providerId: string): Promise<ProductCatalog[]> {
+    return await db.select().from(productCatalog).where(eq(productCatalog.providerId, providerId));
+  }
+
+  async getAllProducts(): Promise<ProductCatalog[]> {
+    return await db.select().from(productCatalog);
+  }
+
+  async createProduct(insertProduct: InsertProductCatalog): Promise<ProductCatalog> {
+    const [product] = await db.insert(productCatalog).values(insertProduct).returning();
+    return product;
+  }
+
+  async updateProduct(id: string, productData: Partial<InsertProductCatalog>): Promise<ProductCatalog | undefined> {
+    const [product] = await db.update(productCatalog).set(productData).where(eq(productCatalog.id, id)).returning();
+    return product;
+  }
+
+  // Production Batches
+  async getBatch(id: string): Promise<ProductionBatch | undefined> {
+    const [batch] = await db.select().from(productionBatches).where(eq(productionBatches.id, id));
+    return batch;
+  }
+
+  async getBatchByCode(code: string): Promise<ProductionBatch | undefined> {
+    const [batch] = await db.select().from(productionBatches).where(eq(productionBatches.batchCode, code));
+    return batch;
+  }
+
+  async getBatchesByProvider(providerId: string): Promise<ProductionBatch[]> {
+    return await db.select().from(productionBatches).where(eq(productionBatches.providerId, providerId));
+  }
+
+  async getBatchesByProduct(productId: string): Promise<ProductionBatch[]> {
+    return await db.select().from(productionBatches).where(eq(productionBatches.productId, productId));
+  }
+
+  async getAllBatches(): Promise<ProductionBatch[]> {
+    return await db.select().from(productionBatches);
+  }
+
+  async createBatch(insertBatch: InsertProductionBatch): Promise<ProductionBatch> {
+    const [batch] = await db.insert(productionBatches).values(insertBatch).returning();
+    return batch;
+  }
+
+  async updateBatch(id: string, batchData: Partial<InsertProductionBatch>): Promise<ProductionBatch | undefined> {
+    const [batch] = await db.update(productionBatches).set(batchData).where(eq(productionBatches.id, id)).returning();
+    return batch;
+  }
+
+  // NFC Validations
+  async getValidation(id: string): Promise<NFCValidation | undefined> {
+    const [validation] = await db.select().from(nfcValidations).where(eq(nfcValidations.id, id));
+    return validation;
+  }
+
+  async getValidationsByTag(tagId: string): Promise<NFCValidation[]> {
+    return await db.select().from(nfcValidations).where(eq(nfcValidations.tagId, tagId));
+  }
+
+  async getValidationsByBatch(batchId: string): Promise<NFCValidation[]> {
+    return await db.select().from(nfcValidations).where(eq(nfcValidations.batchId, batchId));
+  }
+
+  async getValidationsByShipment(shipmentId: string): Promise<NFCValidation[]> {
+    return await db.select().from(nfcValidations).where(eq(nfcValidations.shipmentId, shipmentId));
+  }
+
+  async getAllValidations(): Promise<NFCValidation[]> {
+    return await db.select().from(nfcValidations);
+  }
+
+  async createValidation(insertValidation: InsertNFCValidation): Promise<NFCValidation> {
+    const [validation] = await db.insert(nfcValidations).values(insertValidation).returning();
+    return validation;
   }
 
   // Login Configuration

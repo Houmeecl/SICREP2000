@@ -76,6 +76,28 @@ export const shipmentStatusEnum = pgEnum("shipment_status", [
   "cancelled"
 ]);
 
+export const productStatusEnum = pgEnum("product_status", [
+  "active",
+  "inactive",
+  "discontinued"
+]);
+
+export const batchStatusEnum = pgEnum("batch_status", [
+  "planning",
+  "production",
+  "quality_control",
+  "certified",
+  "shipped",
+  "completed"
+]);
+
+export const validationTypeEnum = pgEnum("validation_type", [
+  "scan",
+  "verification",
+  "delivery",
+  "quality_check"
+]);
+
 // Companies table
 export const companies = pgTable("companies", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -257,6 +279,62 @@ export const packagingComponents = pgTable("packaging_components", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Product Catalog table - Catálogo de productos del proveedor
+export const productCatalog = pgTable("product_catalog", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description"),
+  material: materialREPEnum("material").notNull(),
+  unitWeightGr: integer("unit_weight_gr").notNull(),
+  recyclable: boolean("recyclable").notNull().default(true),
+  recyclabilityPercent: decimal("recyclability_percent", { precision: 5, scale: 2 }),
+  cpsId: varchar("cps_id").references(() => cpsCatalog.id),
+  status: productStatusEnum("status").notNull().default("active"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Production Batches table - Lotes de producción con tracking NFC
+export const productionBatches = pgTable("production_batches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  batchCode: text("batch_code").notNull().unique(),
+  productId: varchar("product_id").notNull().references(() => productCatalog.id),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  quantity: integer("quantity").notNull(),
+  totalWeightGr: integer("total_weight_gr").notNull(),
+  status: batchStatusEnum("status").notNull().default("planning"),
+  productionDate: timestamp("production_date").notNull(),
+  certificationId: varchar("certification_id").references(() => certifications.id),
+  qrCode: text("qr_code"),
+  blockchainHash: text("blockchain_hash"),
+  notes: text("notes"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// NFC Validations table - Registro de validaciones de tags NFC
+export const nfcValidations = pgTable("nfc_validations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tagId: text("tag_id").notNull(),
+  batchId: varchar("batch_id").references(() => productionBatches.id),
+  shipmentId: varchar("shipment_id").references(() => shipments.id),
+  validationType: validationTypeEnum("validation_type").notNull(),
+  location: text("location"),
+  latitude: decimal("latitude", { precision: 10, scale: 7 }),
+  longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  scannedBy: varchar("scanned_by").references(() => users.id),
+  scannerName: text("scanner_name").notNull(),
+  scannerCompany: text("scanner_company"),
+  isValid: boolean("is_valid").notNull().default(true),
+  validationResult: text("validation_result"),
+  metadata: text("metadata"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Insert schemas
 export const insertCompanySchema = createInsertSchema(companies).omit({
   id: true,
@@ -326,6 +404,23 @@ export const insertShipmentSchema = createInsertSchema(shipments).omit({
 });
 
 export const insertPackagingComponentSchema = createInsertSchema(packagingComponents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProductCatalogSchema = createInsertSchema(productCatalog).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProductionBatchSchema = createInsertSchema(productionBatches).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertNFCValidationSchema = createInsertSchema(nfcValidations).omit({
   id: true,
   createdAt: true,
 });
@@ -401,6 +496,15 @@ export type Shipment = typeof shipments.$inferSelect;
 
 export type InsertPackagingComponent = z.infer<typeof insertPackagingComponentSchema>;
 export type PackagingComponent = typeof packagingComponents.$inferSelect;
+
+export type InsertProductCatalog = z.infer<typeof insertProductCatalogSchema>;
+export type ProductCatalog = typeof productCatalog.$inferSelect;
+
+export type InsertProductionBatch = z.infer<typeof insertProductionBatchSchema>;
+export type ProductionBatch = typeof productionBatches.$inferSelect;
+
+export type InsertNFCValidation = z.infer<typeof insertNFCValidationSchema>;
+export type NFCValidation = typeof nfcValidations.$inferSelect;
 
 export type InsertCertificationDocument = z.infer<typeof insertCertificationDocumentSchema>;
 export type CertificationDocument = typeof certificationDocuments.$inferSelect;

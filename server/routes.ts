@@ -1208,6 +1208,239 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // ========== PRODUCT CATALOG ROUTES ==========
+  app.get("/api/products", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.session.user;
+      if (user?.role === 'proveedor' && user.companyId) {
+        const provider = await storage.getProviderByRut(user.rut || '');
+        if (provider) {
+          const products = await storage.getProductsByProvider(provider.id);
+          return res.json(products);
+        }
+      }
+      const products = await storage.getAllProducts();
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/products/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const product = await storage.getProduct(id);
+      if (!product) {
+        return res.status(404).json({ message: "Producto no encontrado" });
+      }
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/products", requireRole('proveedor', 'admin', 'manager_operaciones'), async (req: Request, res: Response) => {
+    try {
+      const user = req.session.user;
+      let providerId = req.body.providerId;
+
+      if (user?.role === 'proveedor' && user.rut) {
+        const provider = await storage.getProviderByRut(user.rut);
+        if (!provider) {
+          return res.status(404).json({ message: "Proveedor no encontrado" });
+        }
+        providerId = provider.id;
+      }
+
+      const productData = {
+        ...req.body,
+        providerId,
+      };
+
+      const product = await storage.createProduct(productData);
+      res.status(201).json(product);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/products/:id", requireRole('proveedor', 'admin', 'manager_operaciones'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const product = await storage.updateProduct(id, req.body);
+      if (!product) {
+        return res.status(404).json({ message: "Producto no encontrado" });
+      }
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ========== PRODUCTION BATCHES ROUTES ==========
+  app.get("/api/batches", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const user = req.session.user;
+      const { productId } = req.query;
+
+      if (productId) {
+        const batches = await storage.getBatchesByProduct(productId as string);
+        return res.json(batches);
+      }
+
+      if (user?.role === 'proveedor' && user.rut) {
+        const provider = await storage.getProviderByRut(user.rut);
+        if (provider) {
+          const batches = await storage.getBatchesByProvider(provider.id);
+          return res.json(batches);
+        }
+      }
+
+      const batches = await storage.getAllBatches();
+      res.json(batches);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/batches/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const batch = await storage.getBatch(id);
+      if (!batch) {
+        return res.status(404).json({ message: "Lote no encontrado" });
+      }
+      res.json(batch);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/batches", requireRole('proveedor', 'admin', 'manager_operaciones'), async (req: Request, res: Response) => {
+    try {
+      const user = req.session.user;
+      let providerId = req.body.providerId;
+
+      if (user?.role === 'proveedor' && user.rut) {
+        const provider = await storage.getProviderByRut(user.rut);
+        if (!provider) {
+          return res.status(404).json({ message: "Proveedor no encontrado" });
+        }
+        providerId = provider.id;
+      }
+
+      const batchCode = `LOTE-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+      const qrCode = `QR-${batchCode}`;
+      const blockchainHash = `0x${Array.from({ length: 64 }, () => 
+        Math.floor(Math.random() * 16).toString(16)
+      ).join('')}`;
+
+      const batchData = {
+        ...req.body,
+        providerId,
+        batchCode,
+        qrCode,
+        blockchainHash,
+        createdBy: user!.id,
+      };
+
+      const batch = await storage.createBatch(batchData);
+
+      await storage.createActivity({
+        type: "batch_created",
+        title: `Lote ${batchCode} creado`,
+        description: `Nuevo lote de producción creado`,
+        userId: user!.id,
+        relatedId: batch.id,
+        status: "success",
+      });
+
+      res.status(201).json(batch);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/batches/:id", requireRole('proveedor', 'admin', 'manager_operaciones'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const batch = await storage.updateBatch(id, req.body);
+      if (!batch) {
+        return res.status(404).json({ message: "Lote no encontrado" });
+      }
+      res.json(batch);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ========== NFC VALIDATIONS ROUTES ==========
+  app.get("/api/nfc-validations", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { tagId, batchId, shipmentId } = req.query;
+
+      if (tagId) {
+        const validations = await storage.getValidationsByTag(tagId as string);
+        return res.json(validations);
+      }
+
+      if (batchId) {
+        const validations = await storage.getValidationsByBatch(batchId as string);
+        return res.json(validations);
+      }
+
+      if (shipmentId) {
+        const validations = await storage.getValidationsByShipment(shipmentId as string);
+        return res.json(validations);
+      }
+
+      const validations = await storage.getAllValidations();
+      res.json(validations);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/nfc-validations/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const validation = await storage.getValidation(id);
+      if (!validation) {
+        return res.status(404).json({ message: "Validación no encontrada" });
+      }
+      res.json(validation);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/nfc-validations", async (req: Request, res: Response) => {
+    try {
+      const user = req.session.user;
+      const validationData = {
+        ...req.body,
+        scannedBy: user?.id,
+        scannerName: user?.fullName || req.body.scannerName || "Anónimo",
+        scannerCompany: user?.companyId || req.body.scannerCompany,
+      };
+
+      const validation = await storage.createValidation(validationData);
+
+      await storage.createActivity({
+        type: "nfc_validation",
+        title: `Tag ${req.body.tagId} validado`,
+        description: `Validación ${req.body.validationType} registrada`,
+        userId: user?.id,
+        relatedId: validation.id,
+        status: validation.isValid ? "success" : "error",
+      });
+
+      res.status(201).json(validation);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
