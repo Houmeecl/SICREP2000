@@ -350,8 +350,49 @@ export default function UserManagement() {
                           </div>
 
                           {userForm.useCustomPanels && (
-                            <div className="pl-6 space-y-2">
-                              <Label className="text-sm font-semibold">Seleccionar Paneles Disponibles</Label>
+                            <div className="pl-6 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-sm font-semibold">Seleccionar Paneles Disponibles</Label>
+                                <div className="flex gap-2">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setUserForm({ ...userForm, customPanels: AVAILABLE_PANELS.map(p => p.id) });
+                                    }}
+                                    data-testid="button-select-all-panels"
+                                  >
+                                    Seleccionar Todos
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setUserForm({ ...userForm, customPanels: [] });
+                                    }}
+                                    data-testid="button-deselect-all-panels"
+                                  >
+                                    Limpiar Todo
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setUserForm({ 
+                                        ...userForm, 
+                                        useCustomPanels: false,
+                                        customPanels: []
+                                      });
+                                    }}
+                                    data-testid="button-use-defaults"
+                                  >
+                                    Usar Por Defecto
+                                  </Button>
+                                </div>
+                              </div>
                               <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 border rounded-md">
                                 {AVAILABLE_PANELS.map((panel) => (
                                   <div key={panel.id} className="flex items-start space-x-2">
@@ -376,9 +417,9 @@ export default function UserManagement() {
                                   </div>
                                 ))}
                               </div>
-                              <div className="text-xs text-muted-foreground">
-                                Paneles por defecto para {userRoles.find(r => r.value === userForm.role)?.label}: 
-                                {' '}{DEFAULT_PANELS_BY_ROLE[userForm.role]?.length || 0} paneles
+                              <div className="text-xs text-muted-foreground bg-muted p-2 rounded-md">
+                                <strong>Seleccionados:</strong> {userForm.customPanels.length} paneles | 
+                                <strong> Por defecto para {userRoles.find(r => r.value === userForm.role)?.label}:</strong> {DEFAULT_PANELS_BY_ROLE[userForm.role]?.length || 0} paneles
                               </div>
                             </div>
                           )}

@@ -24,6 +24,12 @@ interface PackagingComponent {
   unitWeightGr: number;
   quantity: number;
   isRecyclable: boolean;
+  dimensions?: {
+    length?: number;
+    width?: number;
+    height?: number;
+    thickness?: number;
+  };
 }
 
 interface CalculationResult {
@@ -34,13 +40,13 @@ interface CalculationResult {
 }
 
 const MATERIALS = [
-  { value: "papel_carton", label: "Papel y Cartón" },
-  { value: "plasticos", label: "Plásticos" },
-  { value: "vidrio", label: "Vidrio" },
-  { value: "metales", label: "Metales" },
-  { value: "madera", label: "Madera" },
-  { value: "compuestos", label: "Compuestos" },
-  { value: "otros", label: "Otros" },
+  { value: "papel_carton", label: "Papel y Cartón", density: 0.7 }, // g/cm³
+  { value: "plasticos", label: "Plásticos", density: 1.2 },
+  { value: "vidrio", label: "Vidrio", density: 2.5 },
+  { value: "metales", label: "Metales", density: 7.8 },
+  { value: "madera", label: "Madera", density: 0.6 },
+  { value: "compuestos", label: "Compuestos", density: 1.5 },
+  { value: "otros", label: "Otros", density: 1.0 },
 ];
 
 export default function PackagingCertification() {
@@ -63,7 +69,15 @@ export default function PackagingCertification() {
     unitWeightGr: 0,
     quantity: 1,
     isRecyclable: true,
+    dimensions: {
+      length: 0,
+      width: 0,
+      height: 0,
+      thickness: 0,
+    },
   });
+
+  const [useCalculator, setUseCalculator] = useState(false);
 
   const { data: providers } = useQuery({
     queryKey: ["/api/providers"],
@@ -164,6 +178,49 @@ export default function PackagingCertification() {
     };
   };
 
+  const calculateWeightFromDimensions = () => {
+    const dims = currentComponent.dimensions;
+    if (!dims || !dims.length || !dims.width) {
+      toast({
+        variant: "destructive",
+        title: "Faltan dimensiones",
+        description: "Ingrese al menos largo y ancho para calcular el peso",
+      });
+      return;
+    }
+
+    const material = MATERIALS.find(m => m.value === currentComponent.material);
+    if (!material) return;
+
+    // Calcular volumen en cm³
+    let volumeCm3 = 0;
+    
+    if (dims.thickness && dims.thickness > 0) {
+      // Para materiales con espesor (láminas, planchas)
+      volumeCm3 = (dims.length / 10) * (dims.width / 10) * (dims.thickness / 10);
+    } else if (dims.height && dims.height > 0) {
+      // Para objetos 3D (cajas, bidones)
+      volumeCm3 = (dims.length / 10) * (dims.width / 10) * (dims.height / 10);
+    } else {
+      // Solo largo x ancho (asumiendo 1mm de espesor para papel/cartón)
+      const defaultThicknessMm = currentComponent.material === "papel_carton" ? 0.5 : 1;
+      volumeCm3 = (dims.length / 10) * (dims.width / 10) * (defaultThicknessMm / 10);
+    }
+
+    // Calcular peso: volumen (cm³) * densidad (g/cm³)
+    const calculatedWeight = Math.round(volumeCm3 * material.density);
+    
+    setCurrentComponent({
+      ...currentComponent,
+      unitWeightGr: calculatedWeight,
+    });
+
+    toast({
+      title: "Peso calculado",
+      description: `Peso estimado: ${calculatedWeight}g basado en dimensiones y material`,
+    });
+  };
+
   const addComponent = () => {
     if (!currentComponent.description || currentComponent.unitWeightGr <= 0 || currentComponent.quantity <= 0) {
       toast({
@@ -181,7 +238,14 @@ export default function PackagingCertification() {
       unitWeightGr: 0,
       quantity: 1,
       isRecyclable: true,
+      dimensions: {
+        length: 0,
+        width: 0,
+        height: 0,
+        thickness: 0,
+      },
     });
+    setUseCalculator(false);
   };
 
   const removeComponent = (index: number) => {
@@ -286,12 +350,26 @@ export default function PackagingCertification() {
           <Card>
             <CardHeader>
               <CardTitle>Componentes de Embalaje</CardTitle>
-              <CardDescription>Agregue los componentes con peso unitario y cantidad</CardDescription>
+              <CardDescription>Agregue componentes con sus dimensiones o peso directo</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-5">
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                <input
+                  id="use-calculator"
+                  type="checkbox"
+                  checked={useCalculator}
+                  onChange={(e) => setUseCalculator(e.target.checked)}
+                  className="h-4 w-4"
+                  data-testid="checkbox-use-calculator"
+                />
+                <Label htmlFor="use-calculator" className="text-sm cursor-pointer">
+                  Calcular peso automáticamente desde dimensiones
+                </Label>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="material-select">Material</Label>
+                  <Label htmlFor="material-select">Material *</Label>
                   <Select
                     value={currentComponent.material}
                     onValueChange={(value) =>
@@ -304,7 +382,7 @@ export default function PackagingCertification() {
                     <SelectContent>
                       {MATERIALS.map((mat) => (
                         <SelectItem key={mat.value} value={mat.value}>
-                          {mat.label}
+                          {mat.label} (densidad: {mat.density} g/cm³)
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -312,7 +390,7 @@ export default function PackagingCertification() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descripción</Label>
+                  <Label htmlFor="description">Descripción *</Label>
                   <Input
                     id="description"
                     data-testid="input-description"
@@ -320,12 +398,104 @@ export default function PackagingCertification() {
                     onChange={(e) =>
                       setCurrentComponent({ ...currentComponent, description: e.target.value })
                     }
-                    placeholder="Ej: Caja de cartón"
+                    placeholder="Ej: Caja de cartón corrugado"
                   />
                 </div>
+              </div>
 
+              {useCalculator && (
+                <div className="border rounded-lg p-4 space-y-3 bg-primary/5">
+                  <Label className="text-sm font-semibold">Dimensiones (en mm)</Label>
+                  <div className="grid gap-3 md:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dim-length" className="text-xs">Largo *</Label>
+                      <Input
+                        id="dim-length"
+                        data-testid="input-length"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={currentComponent.dimensions?.length || ""}
+                        onChange={(e) =>
+                          setCurrentComponent({
+                            ...currentComponent,
+                            dimensions: { ...currentComponent.dimensions, length: Number(e.target.value) }
+                          })
+                        }
+                        placeholder="mm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dim-width" className="text-xs">Ancho *</Label>
+                      <Input
+                        id="dim-width"
+                        data-testid="input-width"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={currentComponent.dimensions?.width || ""}
+                        onChange={(e) =>
+                          setCurrentComponent({
+                            ...currentComponent,
+                            dimensions: { ...currentComponent.dimensions, width: Number(e.target.value) }
+                          })
+                        }
+                        placeholder="mm"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dim-height" className="text-xs">Alto</Label>
+                      <Input
+                        id="dim-height"
+                        data-testid="input-height"
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        value={currentComponent.dimensions?.height || ""}
+                        onChange={(e) =>
+                          setCurrentComponent({
+                            ...currentComponent,
+                            dimensions: { ...currentComponent.dimensions, height: Number(e.target.value) }
+                          })
+                        }
+                        placeholder="mm (3D)"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="dim-thickness" className="text-xs">Espesor</Label>
+                      <Input
+                        id="dim-thickness"
+                        data-testid="input-thickness"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={currentComponent.dimensions?.thickness || ""}
+                        onChange={(e) =>
+                          setCurrentComponent({
+                            ...currentComponent,
+                            dimensions: { ...currentComponent.dimensions, thickness: Number(e.target.value) }
+                          })
+                        }
+                        placeholder="mm (láminas)"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={calculateWeightFromDimensions}
+                    variant="secondary"
+                    className="w-full"
+                    data-testid="button-calculate-weight"
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Calcular Peso desde Dimensiones
+                  </Button>
+                </div>
+              )}
+
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label htmlFor="unit-weight">Peso Unit. (gr)</Label>
+                  <Label htmlFor="unit-weight">Peso Unitario (gr) *</Label>
                   <Input
                     id="unit-weight"
                     data-testid="input-unit-weight"
@@ -336,11 +506,17 @@ export default function PackagingCertification() {
                       setCurrentComponent({ ...currentComponent, unitWeightGr: Number(e.target.value) })
                     }
                     placeholder="0"
+                    disabled={useCalculator && currentComponent.unitWeightGr === 0}
                   />
+                  {useCalculator && (
+                    <p className="text-xs text-muted-foreground">
+                      Calculado automáticamente o ingrese manualmente
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="quantity">Cantidad</Label>
+                  <Label htmlFor="quantity">Cantidad *</Label>
                   <Input
                     id="quantity"
                     data-testid="input-quantity"
