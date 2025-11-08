@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle, Leaf, LogIn } from "lucide-react";
+import { Shield, CheckCircle, Leaf, LogIn, Search } from "lucide-react";
 import heroImage from "@assets/generated_images/Mining_trucks_with_wind_turbines_2fe45c1a.png";
 import { Link } from "wouter";
 import { useAuth } from "@/lib/auth";
@@ -32,8 +32,14 @@ export default function LandingHero() {
         </p>
         
         <div className="flex flex-wrap gap-4 justify-center mb-12">
+          <Link href="/verify">
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white border border-primary" data-testid="button-verify-traceability">
+              <Search className="w-4 h-4 mr-2" />
+              Verificar Trazabilidad
+            </Button>
+          </Link>
           <Link href={isAuthenticated ? "/packaging" : "/login"}>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white border border-primary" data-testid="button-start-certification">
+            <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20" data-testid="button-start-certification">
               Iniciar Certificación
             </Button>
           </Link>

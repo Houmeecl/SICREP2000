@@ -6,6 +6,20 @@ SICREP es una plataforma profesional de certificación REP para cumplimiento amb
 
 ---
 
+## 🎯 Usuario Demo Principal
+
+Para explorar el sistema completo con todas las funcionalidades:
+- **Usuario:** `sicrep@sicrep.cl`
+- **Contraseña:** `demo123`
+- **Rol:** Proveedor
+- **Características:**
+  - 11 certificaciones en todas las fases del workflow
+  - Desde Solicitud Inicial hasta Monitoreo Continuo
+  - Datos de trazabilidad NFC completos
+  - Métricas ESG asociadas
+
+---
+
 ## Credenciales de Acceso por Rol
 
 ### 👤 Roles Administrativos
