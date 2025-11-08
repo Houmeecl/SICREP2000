@@ -10,6 +10,8 @@ SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibilit
 - ✅ CSV export functionality for reports and certifications
 - ✅ Complete provider-based data filtering (demo user: sicrep@sicrep.cl with RUT 76.543.210-K)
 - ✅ Professional PDF report generation with SICREP branding
+- ✅ **NEW: Manual profesional** con borradores descargables para empresas, asociaciones y auditorías
+- ✅ **NEW: Landing de trazabilidad mejorada** con timeline visual de eventos NFC y workflow
 
 The platform addresses a critical legal paradox: companies introducing less than 300kg of packaging annually are exempt from collection targets but still required to report accurate weight/materiality data to RETC (Registro de Emisiones y Transferencia de Contaminantes). Non-compliance can result in fines from SMA (Superintendencia del Medio Ambiente) ranging from 1 to 10,000 UTA (up to $6.2M CLP).
 
@@ -53,6 +55,8 @@ Preferred communication style: Simple, everyday language.
 - `ProtectedRoute`: Route guard with role-based access control
 - Dashboard components: Stats, Workflow, CPS Catalog, NFC Traceability, ESG Metrics
 - Role-specific views: 15 distinct user roles (admin, evaluator, auditor, provider, mining client, etc.)
+- **Manual page**: 3-tab professional materials (Grandes Empresas, Asociaciones, Borradores PDF)
+- **TraceabilityLanding**: Public verification page with NFC/workflow timeline visualization
 
 ### Backend Architecture
 
