@@ -78,6 +78,9 @@ Preferred communication style: Simple, everyday language.
 - `nfcEvents`: Traceability events for NFC tag scanning
 - `esgMetrics`: Environmental metrics (CO2, recycling rate, water, renewable energy)
 - `activityLog`: System-wide activity tracking
+- `certificationDocuments`: Document storage with base64 file data (NEW)
+- `shipments`: Certified packaging shipments
+- `packagingComponents`: Individual packaging components per shipment
 
 **Workflow Engine:**
 - 10-phase certification workflow:
