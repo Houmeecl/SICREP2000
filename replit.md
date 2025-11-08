@@ -4,6 +4,13 @@
 
 SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibility) compliance certification in Chile, specifically designed for the mining industry and their suppliers. The system provides end-to-end certification workflows for packaging materials under Law 20.920, with specialized features for providers handling less than 300kg annually.
 
+**Latest Updates (November 2025):**
+- ✅ Fully functional document upload system with base64 storage in PostgreSQL
+- ✅ Real file upload, storage, and download capabilities for certification documents
+- ✅ CSV export functionality for reports and certifications
+- ✅ Complete provider-based data filtering (demo user: sicrep@sicrep.cl with RUT 76.543.210-K)
+- ✅ Professional PDF report generation with SICREP branding
+
 The platform addresses a critical legal paradox: companies introducing less than 300kg of packaging annually are exempt from collection targets but still required to report accurate weight/materiality data to RETC (Registro de Emisiones y Transferencia de Contaminantes). Non-compliance can result in fines from SMA (Superintendencia del Medio Ambiente) ranging from 1 to 10,000 UTA (up to $6.2M CLP).
 
 SICREP transforms this compliance burden into competitive advantage through:

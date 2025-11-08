@@ -338,7 +338,7 @@ export const certificationDocuments = pgTable("certification_documents", {
   fileName: text("file_name").notNull(),
   fileSize: integer("file_size").notNull(),
   fileType: text("file_type").notNull(),
-  fileUrl: text("file_url").notNull(),
+  fileData: text("file_data").notNull(), // Base64 encoded file content
   uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
   description: text("description"),
   category: text("category").default("general"),

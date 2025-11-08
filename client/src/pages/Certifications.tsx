@@ -38,6 +38,14 @@ export default function Certifications() {
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
+      // Convertir archivo a base64
+      const fileData = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
       // Obtener provider del usuario actual
       const user = await fetch('/api/auth/me').then(r => r.json());
       let providerId = null;
@@ -58,6 +66,7 @@ export default function Certifications() {
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
+          fileData, // Base64 encoded file
           providerId,
           category: 'technical',
           description: 'Documento técnico de certificación',

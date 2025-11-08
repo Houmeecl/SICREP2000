@@ -1121,17 +1121,17 @@ export function registerRoutes(app: Express): Server {
         return res.status(401).json({ message: "No autenticado" });
       }
 
-      const { fileName, fileSize, fileType, certificationId, providerId, description, category } = req.body;
+      const { fileName, fileSize, fileType, fileData, certificationId, providerId, description, category } = req.body;
 
-      // En producción real, aquí se subiría el archivo a Replit Object Storage
-      // Por ahora, simulamos la URL del archivo
-      const fileUrl = `/uploads/${Date.now()}-${fileName}`;
+      if (!fileData) {
+        return res.status(400).json({ message: "Falta el contenido del archivo" });
+      }
 
       const document = await storage.createCertificationDocument({
         fileName,
         fileSize,
         fileType,
-        fileUrl,
+        fileData, // Base64 encoded file content
         certificationId: certificationId || null,
         providerId: providerId || null,
         uploadedBy: userId,
@@ -1139,7 +1139,30 @@ export function registerRoutes(app: Express): Server {
         category: category || 'general',
       });
 
-      res.json(document);
+      // No devolver fileData en la respuesta (puede ser muy grande)
+      const { fileData: _, ...documentWithoutData } = document;
+      res.json(documentWithoutData);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Download document endpoint
+  app.get("/api/certification-documents/:id/download", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const documents = await storage.getCertificationDocuments();
+      const document = documents.find(d => d.id === id);
+      
+      if (!document) {
+        return res.status(404).json({ message: "Documento no encontrado" });
+      }
+
+      res.json({
+        fileName: document.fileName,
+        fileType: document.fileType,
+        fileData: document.fileData,
+      });
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
