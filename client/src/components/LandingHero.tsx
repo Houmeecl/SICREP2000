@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle, Leaf } from "lucide-react";
+import { Shield, CheckCircle, Leaf, LogIn } from "lucide-react";
 import heroImage from "@assets/generated_images/Mining_trucks_with_wind_turbines_2fe45c1a.png";
+import { Link } from "wouter";
+import { useAuth } from "@/lib/auth";
 
 export default function LandingHero() {
+  const { isAuthenticated } = useAuth();
+  
   return (
     <div className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
       <div 
@@ -28,12 +32,17 @@ export default function LandingHero() {
         </p>
         
         <div className="flex flex-wrap gap-4 justify-center mb-12">
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-white border border-primary">
-            Solicitar Certificación
-          </Button>
-          <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20">
-            Ver Demo
-          </Button>
+          <Link href={isAuthenticated ? "/packaging" : "/login"}>
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white border border-primary" data-testid="button-start-certification">
+              Iniciar Certificación
+            </Button>
+          </Link>
+          <Link href="/login">
+            <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20" data-testid="button-login-hero">
+              <LogIn className="w-4 h-4 mr-2" />
+              Ingresar
+            </Button>
+          </Link>
         </div>
         
         <div className="flex flex-wrap gap-8 justify-center text-white/90">

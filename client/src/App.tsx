@@ -16,16 +16,42 @@ import Dashboard from "@/pages/Dashboard";
 import Certifications from "@/pages/Certifications";
 import CPSPage from "@/pages/CPSPage";
 import Providers from "@/pages/Providers";
+import ProvidersDirectory from "@/pages/ProvidersDirectory";
 import Traceability from "@/pages/Traceability";
+import TraceabilityLanding from "@/pages/TraceabilityLanding";
 import ESG from "@/pages/ESG";
 import Roles from "@/pages/Roles";
+import UserManagement from "@/pages/UserManagement";
+import PackagingCertification from "@/pages/PackagingCertification";
+import ShipmentsList from "@/pages/ShipmentsList";
+import ValidateQR from "@/pages/ValidateQR";
+import ValidateNFC from "@/pages/ValidateNFC";
+import LoginSettings from "@/pages/LoginSettings";
 import NotFound from "@/pages/not-found";
+
+// Role-specific dashboards
+import AdminDashboard from "@/pages/dashboards/AdminDashboard";
+import GerenteGeneralDashboard from "@/pages/dashboards/GerenteGeneralDashboard";
+import ManagerOperacionesDashboard from "@/pages/dashboards/ManagerOperacionesDashboard";
+import CPSDashboard from "@/pages/dashboards/CPSDashboard";
+import EvaluadorDashboard from "@/pages/dashboards/EvaluadorDashboard";
+import AuditorDashboard from "@/pages/dashboards/AuditorDashboard";
+import ComiteDashboard from "@/pages/dashboards/ComiteDashboard";
+import ProveedorDashboard from "@/pages/dashboards/ProveedorDashboard";
+import ClienteMineriaDashboard from "@/pages/dashboards/ClienteMineriaDashboard";
+import ViewerDashboard from "@/pages/dashboards/ViewerDashboard";
+import AnalistaDashboard from "@/pages/dashboards/AnalistaDashboard";
+import CoordinadorDashboard from "@/pages/dashboards/CoordinadorDashboard";
+import TecnicoDashboard from "@/pages/dashboards/TecnicoDashboard";
+import InspectorDashboard from "@/pages/dashboards/InspectorDashboard";
+import SupervisorDashboard from "@/pages/dashboards/SupervisorDashboard";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/verify" component={TraceabilityLanding} />
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
@@ -46,6 +72,11 @@ function Router() {
           <Providers />
         </ProtectedRoute>
       </Route>
+      <Route path="/providers-directory">
+        <ProtectedRoute>
+          <ProvidersDirectory />
+        </ProtectedRoute>
+      </Route>
       <Route path="/traceability">
         <ProtectedRoute>
           <Traceability />
@@ -61,6 +92,106 @@ function Router() {
           <Roles />
         </ProtectedRoute>
       </Route>
+      <Route path="/user-management">
+        <ProtectedRoute allowedRoles={['admin']}>
+          <UserManagement />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/login-settings">
+        <ProtectedRoute allowedRoles={['admin']}>
+          <LoginSettings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/packaging">
+        <ProtectedRoute>
+          <PackagingCertification />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/shipments">
+        <ProtectedRoute>
+          <ShipmentsList />
+        </ProtectedRoute>
+      </Route>
+      
+      {/* Role-specific Dashboards */}
+      <Route path="/dashboard/admin">
+        <ProtectedRoute allowedRoles={['admin']}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/gerente-general">
+        <ProtectedRoute allowedRoles={['gerente_general']}>
+          <GerenteGeneralDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/manager-operaciones">
+        <ProtectedRoute allowedRoles={['manager_operaciones']}>
+          <ManagerOperacionesDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/cps">
+        <ProtectedRoute allowedRoles={['cps']}>
+          <CPSDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/evaluador">
+        <ProtectedRoute allowedRoles={['evaluador']}>
+          <EvaluadorDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/auditor">
+        <ProtectedRoute allowedRoles={['auditor']}>
+          <AuditorDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/comite">
+        <ProtectedRoute allowedRoles={['comite']}>
+          <ComiteDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/proveedor">
+        <ProtectedRoute allowedRoles={['proveedor']}>
+          <ProveedorDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/cliente-mineria">
+        <ProtectedRoute allowedRoles={['cliente_mineria']}>
+          <ClienteMineriaDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/viewer">
+        <ProtectedRoute allowedRoles={['viewer']}>
+          <ViewerDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/analista">
+        <ProtectedRoute allowedRoles={['analista']}>
+          <AnalistaDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/coordinador">
+        <ProtectedRoute allowedRoles={['coordinador']}>
+          <CoordinadorDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/tecnico">
+        <ProtectedRoute allowedRoles={['tecnico']}>
+          <TecnicoDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/inspector">
+        <ProtectedRoute allowedRoles={['inspector']}>
+          <InspectorDashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/dashboard/supervisor">
+        <ProtectedRoute allowedRoles={['supervisor']}>
+          <SupervisorDashboard />
+        </ProtectedRoute>
+      </Route>
+      
+      <Route path="/validate/:qrCode" component={ValidateQR} />
+      <Route path="/validate-nfc" component={ValidateNFC} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -68,7 +199,7 @@ function Router() {
 
 export default function App() {
   const [location] = useLocation();
-  const isPublicRoute = location === "/" || location === "/login";
+  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location.startsWith("/validate/") || location === "/validate-nfc";
   
   const style = {
     "--sidebar-width": "16rem",
@@ -82,7 +213,6 @@ export default function App() {
           {isPublicRoute ? (
             <div className="min-h-screen">
               <Router />
-              <Toaster />
             </div>
           ) : (
             <SidebarProvider style={style as React.CSSProperties}>

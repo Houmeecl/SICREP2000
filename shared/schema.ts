@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, integer, timestamp, boolean, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, integer, timestamp, boolean, decimal, pgEnum, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -58,6 +58,37 @@ export const providerStatusEnum = pgEnum("provider_status", [
   "suspended"
 ]);
 
+export const materialREPEnum = pgEnum("material_rep", [
+  "papel_carton",
+  "plasticos",
+  "vidrio",
+  "metales",
+  "madera",
+  "compuestos",
+  "otros"
+]);
+
+export const shipmentStatusEnum = pgEnum("shipment_status", [
+  "draft",
+  "certified",
+  "in_transit",
+  "delivered",
+  "cancelled"
+]);
+
+// Companies table
+export const companies = pgTable("companies", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  rut: text("rut").notNull().unique(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  industry: text("industry"),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Users table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -67,7 +98,25 @@ export const users = pgTable("users", {
   fullName: text("full_name").notNull(),
   rut: text("rut"),
   role: userRoleEnum("role").notNull().default("viewer"),
+  companyId: varchar("company_id").references(() => companies.id),
+  customPanels: text("custom_panels").array(), // Paneles personalizados: ['dashboard', 'certifications', 'shipments', 'providers', 'esg', 'traceability']
   active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// NFC Tags table
+export const nfcTags = pgTable("nfc_tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tagId: text("tag_id").notNull().unique(),
+  uid: text("uid").notNull().unique(),
+  type: text("type").notNull().default("NTAG215"),
+  entityType: text("entity_type").notNull(),
+  entityId: varchar("entity_id").notNull(),
+  data: text("data").notNull(),
+  signature: text("signature").notNull(),
+  active: boolean("active").notNull().default(true),
+  lastScanned: timestamp("last_scanned"),
+  scanCount: integer("scan_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -172,7 +221,51 @@ export const activityLog = pgTable("activity_log", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+// Shipments table - Despachos certificados
+export const shipments = pgTable("shipments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  clientName: text("client_name").notNull(),
+  clientRut: text("client_rut"),
+  totalWeightGr: integer("total_weight_gr").notNull(),
+  recyclableWeightGr: integer("recyclable_weight_gr").notNull(),
+  recyclabilityPercent: decimal("recyclability_percent", { precision: 5, scale: 2 }).notNull(),
+  recyclabilityLevel: text("recyclability_level").notNull(), // "Alto", "Medio", "Bajo"
+  qrCode: text("qr_code").notNull().unique(),
+  nfcTag: text("nfc_tag"),
+  blockchainHash: text("blockchain_hash").notNull(),
+  status: shipmentStatusEnum("status").notNull().default("draft"),
+  certifiedBy: varchar("certified_by").references(() => users.id),
+  certifiedAt: timestamp("certified_at"),
+  deliveredAt: timestamp("delivered_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Packaging Components table - Componentes de embalaje por despacho
+export const packagingComponents = pgTable("packaging_components", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  shipmentId: varchar("shipment_id").notNull().references(() => shipments.id),
+  material: materialREPEnum("material").notNull(),
+  description: text("description").notNull(),
+  unitWeightGr: integer("unit_weight_gr").notNull(),
+  quantity: integer("quantity").notNull(),
+  totalWeightGr: integer("total_weight_gr").notNull(),
+  isRecyclable: boolean("is_recyclable").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Insert schemas
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  email: z.string().email("Email inválido"),
+  rut: z.string().min(1, "RUT requerido"),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -180,6 +273,14 @@ export const insertUserSchema = createInsertSchema(users).omit({
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   email: z.string().email("Email inválido"),
   rut: z.string().optional(),
+  companyId: z.string().optional(),
+});
+
+export const insertNFCTagSchema = createInsertSchema(nfcTags).omit({
+  id: true,
+  createdAt: true,
+  lastScanned: true,
+  scanCount: true,
 });
 
 export const insertProviderSchema = createInsertSchema(providers).omit({
@@ -218,9 +319,41 @@ export const insertActivityLogSchema = createInsertSchema(activityLog).omit({
   createdAt: true,
 });
 
+export const insertShipmentSchema = createInsertSchema(shipments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPackagingComponentSchema = createInsertSchema(packagingComponents).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Login Configuration Table
+export const loginConfig = pgTable("login_config", {
+  id: serial("id").primaryKey(),
+  imageUrl: text("image_url"),
+  title: text("title").default("Sistema de Certificación REP"),
+  subtitle: text("subtitle").default("Plataforma profesional de trazabilidad NFC y gestión de cumplimiento ambiental según Ley 20.920"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  updatedBy: varchar("updated_by"),
+});
+
+export const insertLoginConfigSchema = createInsertSchema(loginConfig).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Types
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Company = typeof companies.$inferSelect;
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export type InsertNFCTag = z.infer<typeof insertNFCTagSchema>;
+export type NFCTag = typeof nfcTags.$inferSelect;
 
 export type InsertProvider = z.infer<typeof insertProviderSchema>;
 export type Provider = typeof providers.$inferSelect;
@@ -242,3 +375,12 @@ export type ESGMetric = typeof esgMetrics.$inferSelect;
 
 export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 export type ActivityLog = typeof activityLog.$inferSelect;
+
+export type InsertShipment = z.infer<typeof insertShipmentSchema>;
+export type Shipment = typeof shipments.$inferSelect;
+
+export type InsertPackagingComponent = z.infer<typeof insertPackagingComponentSchema>;
+export type PackagingComponent = typeof packagingComponents.$inferSelect;
+
+export type InsertLoginConfig = z.infer<typeof insertLoginConfigSchema>;
+export type LoginConfig = typeof loginConfig.$inferSelect;

@@ -1,0 +1,208 @@
+/**
+ * Sistema de paneles modulares personalizados por usuario
+ * Los usuarios pueden tener paneles específicos asignados o usar los paneles por defecto de su rol
+ */
+
+export type PanelId =
+  | 'dashboard'
+  | 'certifications'
+  | 'cps'
+  | 'providers'
+  | 'providers-directory'
+  | 'traceability'
+  | 'esg'
+  | 'roles'
+  | 'user-management'
+  | 'login-settings'
+  | 'packaging'
+  | 'shipments'
+  | 'validate-qr'
+  | 'validate-nfc';
+
+export interface PanelConfig {
+  id: PanelId;
+  name: string;
+  path: string;
+  icon: string;
+  description: string;
+  isAdmin?: boolean;
+}
+
+/**
+ * Todos los paneles disponibles en el sistema
+ */
+export const AVAILABLE_PANELS: PanelConfig[] = [
+  {
+    id: 'dashboard',
+    name: 'Dashboard',
+    path: '/dashboard',
+    icon: 'LayoutDashboard',
+    description: 'Panel principal con métricas y estadísticas',
+  },
+  {
+    id: 'certifications',
+    name: 'Certificaciones',
+    path: '/certifications',
+    icon: 'Award',
+    description: 'Gestión de certificaciones REP',
+  },
+  {
+    id: 'cps',
+    name: 'Sistemas CPS',
+    path: '/cps',
+    icon: 'Package',
+    description: 'Certificación de Productos y Servicios',
+  },
+  {
+    id: 'providers',
+    name: 'Proveedores',
+    path: '/providers',
+    icon: 'Building2',
+    description: 'Gestión de proveedores',
+  },
+  {
+    id: 'providers-directory',
+    name: 'Directorio Certificados',
+    path: '/providers-directory',
+    icon: 'BookOpen',
+    description: 'Directorio de proveedores certificados',
+  },
+  {
+    id: 'traceability',
+    name: 'Trazabilidad',
+    path: '/traceability',
+    icon: 'GitBranch',
+    description: 'Sistema de trazabilidad blockchain',
+  },
+  {
+    id: 'esg',
+    name: 'ESG',
+    path: '/esg',
+    icon: 'Leaf',
+    description: 'Métricas ambientales y Copper Mark',
+  },
+  {
+    id: 'packaging',
+    name: 'Embalajes',
+    path: '/packaging',
+    icon: 'Box',
+    description: 'Certificación de embalajes',
+  },
+  {
+    id: 'shipments',
+    name: 'Despachos',
+    path: '/shipments',
+    icon: 'Truck',
+    description: 'Gestión de despachos certificados',
+  },
+  {
+    id: 'roles',
+    name: 'Roles',
+    path: '/roles',
+    icon: 'Users',
+    description: 'Gestión de roles del sistema',
+    isAdmin: true,
+  },
+  {
+    id: 'user-management',
+    name: 'Usuarios',
+    path: '/user-management',
+    icon: 'UserCog',
+    description: 'Administración de usuarios',
+    isAdmin: true,
+  },
+  {
+    id: 'login-settings',
+    name: 'Config. Login',
+    path: '/login-settings',
+    icon: 'Settings',
+    description: 'Personalización de pantalla de login',
+    isAdmin: true,
+  },
+  {
+    id: 'validate-qr',
+    name: 'Validar QR',
+    path: '/validate-qr',
+    icon: 'QrCode',
+    description: 'Validación de códigos QR',
+  },
+  {
+    id: 'validate-nfc',
+    name: 'Validar NFC',
+    path: '/validate-nfc',
+    icon: 'Wifi',
+    description: 'Validación de tags NFC',
+  },
+];
+
+/**
+ * Paneles por defecto según el rol del usuario
+ */
+export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
+  admin: [
+    'dashboard',
+    'certifications',
+    'cps',
+    'providers',
+    'providers-directory',
+    'traceability',
+    'esg',
+    'packaging',
+    'shipments',
+    'roles',
+    'user-management',
+    'login-settings',
+    'validate-qr',
+    'validate-nfc',
+  ],
+  gerente_general: [
+    'dashboard',
+    'certifications',
+    'providers',
+    'providers-directory',
+    'esg',
+    'traceability',
+  ],
+  manager_operaciones: [
+    'dashboard',
+    'certifications',
+    'cps',
+    'providers',
+    'packaging',
+    'shipments',
+    'traceability',
+  ],
+  cps: ['dashboard', 'cps', 'certifications', 'packaging'],
+  evaluador: ['dashboard', 'certifications', 'cps'],
+  auditor: ['dashboard', 'certifications', 'providers', 'esg', 'traceability'],
+  comite: ['dashboard', 'certifications', 'providers-directory', 'esg'],
+  proveedor: ['dashboard', 'shipments', 'certifications', 'validate-qr'],
+  cliente_mineria: ['dashboard', 'shipments', 'esg', 'providers-directory'], // Solo ven sus despachos
+  viewer: ['dashboard', 'providers-directory', 'validate-qr', 'validate-nfc'],
+  analista: ['dashboard', 'esg', 'certifications', 'traceability'],
+  coordinador: ['dashboard', 'certifications', 'providers', 'shipments'],
+  tecnico: ['dashboard', 'certifications', 'validate-qr', 'validate-nfc'],
+  inspector: ['dashboard', 'certifications', 'traceability', 'validate-nfc'],
+  supervisor: ['dashboard', 'certifications', 'providers', 'shipments', 'traceability'],
+};
+
+/**
+ * Obtiene los paneles que un usuario puede ver
+ * Si el usuario tiene paneles personalizados, usa esos; si no, usa los paneles por defecto de su rol
+ */
+export function getUserPanels(user: { role: string; customPanels?: string[] | null }): PanelId[] {
+  return user.customPanels && user.customPanels.length > 0
+    ? user.customPanels as PanelId[]
+    : DEFAULT_PANELS_BY_ROLE[user.role] || ['dashboard'];
+}
+
+/**
+ * Verifica si un usuario tiene acceso a un panel específico
+ */
+export function hasAccessToPanel(
+  panelId: PanelId,
+  user: { role: string; customPanels?: string[] | null }
+): boolean {
+  const userPanels = getUserPanels(user);
+  return userPanels.includes(panelId);
+}

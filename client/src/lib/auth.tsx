@@ -53,11 +53,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('sicrep_user');
-    queryClient.clear();
-    window.location.href = '/login';
+  const logout = async () => {
+    try {
+      // Call backend to destroy session
+      await apiRequest('POST', '/api/auth/logout', {});
+    } catch (error) {
+      console.error('Error during logout:', error);
+    } finally {
+      // Clear frontend state regardless of backend response
+      setUser(null);
+      localStorage.removeItem('sicrep_user');
+      queryClient.clear();
+      window.location.href = '/login';
+    }
   };
 
   return (

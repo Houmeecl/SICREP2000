@@ -10,26 +10,64 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from "@/components/ui/sidebar";
-import { Home, FileCheck, Package2, Users, TrendingUp, Settings, Wifi, Building2, ClipboardCheck } from "lucide-react";
+import { 
+  LayoutDashboard,
+  Award,
+  Package,
+  Building2,
+  BookOpen,
+  GitBranch,
+  Leaf,
+  Box,
+  Truck,
+  Users,
+  UserCog,
+  QrCode,
+  Wifi,
+  ClipboardCheck,
+  Settings,
+  type LucideIcon
+} from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import { getUserPanels, AVAILABLE_PANELS } from "@shared/panel-permissions";
 
-const menuItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Certificaciones", url: "/certifications", icon: FileCheck, badge: "12" },
-  { title: "Catálogo CPS", url: "/cps", icon: Package2 },
-  { title: "Proveedores", url: "/providers", icon: Building2, badge: "3" },
-  { title: "Trazabilidad NFC", url: "/traceability", icon: Wifi },
-  { title: "Métricas ESG", url: "/esg", icon: TrendingUp },
-];
-
-const adminItems = [
-  { title: "Roles & Usuarios", url: "/roles", icon: Users },
-  { title: "Configuración", url: "/settings", icon: Settings },
-];
+const ICON_MAP: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  Award,
+  Package,
+  Building2,
+  BookOpen,
+  GitBranch,
+  Leaf,
+  Box,
+  Truck,
+  Users,
+  UserCog,
+  QrCode,
+  Wifi,
+  Settings,
+};
 
 export function AppSidebar() {
   const [location] = useLocation();
+  
+  const { data: user } = useQuery<any>({
+    queryKey: ["/api/user"],
+  });
+
+  const authorizedPanelIds = user ? getUserPanels(user) : [];
+
+  const availableMenuItems = AVAILABLE_PANELS
+    .filter(panel => authorizedPanelIds.includes(panel.id))
+    .map(panel => ({
+      ...panel,
+      icon: ICON_MAP[panel.icon] || Package,
+      isActive: location === panel.path,
+    }));
+
+  const mainPanels = availableMenuItems.filter(item => !item.isAdmin);
+  const adminPanels = availableMenuItems.filter(item => item.isAdmin);
 
   return (
     <Sidebar>
@@ -46,52 +84,71 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Menú Principal</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="default" className="ml-auto text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {mainPanels.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Menú Principal</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {mainPanels.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={item.isActive}
+                        data-testid={`sidebar-${item.id}`}
+                      >
+                        <Link href={item.path}>
+                          <Icon className="w-4 h-4" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         
-        <SidebarGroup>
-          <SidebarGroupLabel>Administración</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {adminItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location === item.url}>
-                    <Link href={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {adminPanels.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminPanels.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={item.isActive}
+                        data-testid={`sidebar-${item.id}`}
+                      >
+                        <Link href={item.path}>
+                          <Icon className="w-4 h-4" />
+                          <span>{item.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       
       <SidebarFooter className="border-t p-4">
         <div className="text-xs text-muted-foreground">
-          <div className="font-mono">v3.1.1</div>
+          <div className="font-mono">v3.2.0</div>
           <div>Ley 20.920 - Chile</div>
+          {user && (
+            <div className="mt-2 pt-2 border-t">
+              <div className="font-semibold">{user.fullName}</div>
+              <div className="text-xs opacity-70">{user.email}</div>
+            </div>
+          )}
         </div>
       </SidebarFooter>
     </Sidebar>
