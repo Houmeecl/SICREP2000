@@ -3,12 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, CheckCircle, Leaf, Shield, TrendingUp, QrCode, Scan } from "lucide-react";
+import { Search, CheckCircle, Leaf, Shield, TrendingUp, QrCode, Scan, Package, Award, Lock, GitBranch, Calendar, MapPin, User } from "lucide-react";
 import pasaporteDigitalLogo from "@assets/ChatGPT Image 5 nov 2025, 11_44_49 p.m._1762632997486.png";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TraceabilityLanding() {
   const [searchCode, setSearchCode] = useState("");
   const [searchResult, setSearchResult] = useState<any>(null);
+  const [searchWorkflow, setSearchWorkflow] = useState<any[]>([]);
+  const [searchNFCEvents, setSearchNFCEvents] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
@@ -20,9 +23,22 @@ export default function TraceabilityLanding() {
       const data = await response.json();
       
       if (data.length > 0) {
-        setSearchResult(data[0]);
+        const cert = data[0];
+        setSearchResult(cert);
+        
+        // Obtener workflow history
+        const workflowRes = await fetch(`/api/workflow-history?certificationId=${cert.id}`);
+        const workflowData = await workflowRes.json();
+        setSearchWorkflow(workflowData);
+        
+        // Obtener eventos NFC
+        const nfcRes = await fetch(`/api/nfc-events?certificationId=${cert.id}`);
+        const nfcData = await nfcRes.json();
+        setSearchNFCEvents(nfcData);
       } else {
         setSearchResult(null);
+        setSearchWorkflow([]);
+        setSearchNFCEvents([]);
       }
     } catch (error) {
       console.error("Error searching certification:", error);

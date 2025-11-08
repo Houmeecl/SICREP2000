@@ -28,6 +28,7 @@ import ValidateQR from "@/pages/ValidateQR";
 import ValidateNFC from "@/pages/ValidateNFC";
 import LoginSettings from "@/pages/LoginSettings";
 import Reports from "@/pages/Reports";
+import Manual from "@/pages/Manual";
 import NotFound from "@/pages/not-found";
 
 // Role-specific dashboards
@@ -116,6 +117,11 @@ function Router() {
       <Route path="/reports">
         <ProtectedRoute>
           <Reports />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/manual">
+        <ProtectedRoute>
+          <Manual />
         </ProtectedRoute>
       </Route>
       

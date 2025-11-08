@@ -12,6 +12,7 @@ export type PanelId =
   | 'traceability'
   | 'esg'
   | 'reports'
+  | 'manual'
   | 'roles'
   | 'user-management'
   | 'login-settings'
@@ -90,6 +91,13 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     description: 'Informes gráficos y reportes REP',
   },
   {
+    id: 'manual',
+    name: 'Manual',
+    path: '/manual',
+    icon: 'BookOpen',
+    description: 'Manual y borradores para empresas',
+  },
+  {
     id: 'packaging',
     name: 'Embalajes',
     path: '/packaging',
@@ -156,6 +164,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'traceability',
     'esg',
     'reports',
+    'manual',
     'packaging',
     'shipments',
     'roles',
@@ -171,6 +180,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'providers-directory',
     'esg',
     'reports',
+    'manual',
     'traceability',
   ],
   manager_operaciones: [
