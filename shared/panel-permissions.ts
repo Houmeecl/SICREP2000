@@ -11,6 +11,7 @@ export type PanelId =
   | 'providers-directory'
   | 'traceability'
   | 'esg'
+  | 'reports'
   | 'roles'
   | 'user-management'
   | 'login-settings'
@@ -82,6 +83,13 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     description: 'Métricas ambientales y Copper Mark',
   },
   {
+    id: 'reports',
+    name: 'Informes',
+    path: '/reports',
+    icon: 'BarChart',
+    description: 'Informes gráficos y reportes REP',
+  },
+  {
     id: 'packaging',
     name: 'Embalajes',
     path: '/packaging',
@@ -147,6 +155,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'providers-directory',
     'traceability',
     'esg',
+    'reports',
     'packaging',
     'shipments',
     'roles',
@@ -161,6 +170,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'providers',
     'providers-directory',
     'esg',
+    'reports',
     'traceability',
   ],
   manager_operaciones: [
@@ -170,20 +180,21 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'providers',
     'packaging',
     'shipments',
+    'reports',
     'traceability',
   ],
   cps: ['dashboard', 'cps', 'certifications', 'packaging'],
   evaluador: ['dashboard', 'certifications', 'cps'],
-  auditor: ['dashboard', 'certifications', 'providers', 'esg', 'traceability'],
-  comite: ['dashboard', 'certifications', 'providers-directory', 'esg'],
+  auditor: ['dashboard', 'certifications', 'providers', 'esg', 'reports', 'traceability'],
+  comite: ['dashboard', 'certifications', 'providers-directory', 'esg', 'reports'],
   proveedor: ['dashboard', 'shipments', 'certifications', 'validate-qr'],
   cliente_mineria: ['dashboard', 'shipments', 'esg', 'providers-directory'], // Solo ven sus despachos
   viewer: ['dashboard', 'providers-directory', 'validate-qr', 'validate-nfc'],
-  analista: ['dashboard', 'esg', 'certifications', 'traceability'],
-  coordinador: ['dashboard', 'certifications', 'providers', 'shipments'],
+  analista: ['dashboard', 'esg', 'certifications', 'reports', 'traceability'],
+  coordinador: ['dashboard', 'certifications', 'providers', 'shipments', 'reports'],
   tecnico: ['dashboard', 'certifications', 'validate-qr', 'validate-nfc'],
   inspector: ['dashboard', 'certifications', 'traceability', 'validate-nfc'],
-  supervisor: ['dashboard', 'certifications', 'providers', 'shipments', 'traceability'],
+  supervisor: ['dashboard', 'certifications', 'providers', 'shipments', 'reports', 'traceability'],
 };
 
 /**

@@ -20,9 +20,9 @@ import bcrypt from "bcrypt";
 import {
   calculatePackagingMetrics,
   generateShipmentCode,
-  generateNFCTag,
-  generateBlockchainHash,
-  generateQRCode,
+  generateNFCTag as generateNFCTagUtil,
+  generateBlockchainHash as generateBlockchainHashUtil,
+  generateQRCode as generateQRCodeUtil,
 } from "./packaging-calculator";
 import QRCode from "qrcode";
 import { generateOfficialREPCertificate, generateEvaluationReport } from "./pdf-generator";
@@ -32,16 +32,6 @@ import { generateESGReport } from "./esg-pdf-generator";
 // Helper to generate unique codes
 function generateCode(prefix: string, year: number, sequence: number): string {
   return `${prefix}-CL-${year}-${String(sequence).padStart(6, '0')}`;
-}
-
-function generateNFCTag(sequence: number): string {
-  return `NFC-2025-${String(sequence).padStart(6, '0')}`;
-}
-
-function generateBlockchainHash(): string {
-  return '0x' + Array.from({ length: 64 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('');
 }
 
 // Authentication middleware
@@ -299,9 +289,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Tag NFC no encontrado" });
       }
       
-      // Update scan count and last scanned time
+      // Update last scanned time
       const updatedTag = await storage.updateNFCTag(tag.id, {
-        scanCount: tag.scanCount + 1,
         lastScanned: new Date(),
       });
       
@@ -871,17 +860,24 @@ export function registerRoutes(app: Express): Server {
     try {
       const userId = req.session.user?.id;
       const role = req.session.user?.role;
-      const companyId = req.session.user?.companyId;
       
       const allShipments = await storage.getAllShipments();
       
-      // Filter by role: mineras/consumidores industriales solo ven sus despachos
-      if (role === 'proveedor' || role === 'cliente_mineria') {
-        if (!companyId) {
+      // Filter by role: proveedores only see their shipments
+      if (role === 'proveedor') {
+        // Get provider by user's RUT
+        const user = await storage.getUserById(userId!);
+        if (!user || !user.rut) {
           return res.json([]);
         }
-        // Solo mostrar despachos de su compañía
-        const filteredShipments = allShipments.filter(s => s.providerId === companyId);
+        
+        const provider = await storage.getProviderByRut(user.rut);
+        if (!provider) {
+          return res.json([]);
+        }
+        
+        // Solo mostrar despachos de este proveedor
+        const filteredShipments = allShipments.filter(s => s.providerId === provider.id);
         res.json(filteredShipments);
       } else {
         // Admin y otros roles ven todos los despachos
@@ -927,8 +923,8 @@ export function registerRoutes(app: Express): Server {
       const allShipments = await storage.getAllShipments();
       const sequence = allShipments.length + 1;
       const code = generateShipmentCode(sequence);
-      const qrCode = generateQRCode();
-      const blockchainHash = generateBlockchainHash();
+      const qrCode = generateQRCodeUtil();
+      const blockchainHash = generateBlockchainHashUtil();
       
       // Create shipment
       const shipment = await storage.createShipment({
@@ -993,7 +989,7 @@ export function registerRoutes(app: Express): Server {
       
       // Generate NFC tag
       const allShipments = await storage.getAllShipments();
-      const nfcTag = generateNFCTag(allShipments.length);
+      const nfcTag = generateNFCTagUtil(allShipments.length);
       
       // Update shipment to certified
       const updatedShipment = await storage.updateShipment(id, {
@@ -1102,6 +1098,63 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
+  // Certification Documents endpoints
+  app.get("/api/certification-documents", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { certificationId, providerId } = req.query;
+      
+      const documents = await storage.getCertificationDocuments(
+        certificationId as string,
+        providerId as string
+      );
+      
+      res.json(documents);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/certification-documents", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const userId = req.session.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "No autenticado" });
+      }
+
+      const { fileName, fileSize, fileType, certificationId, providerId, description, category } = req.body;
+
+      // En producción real, aquí se subiría el archivo a Replit Object Storage
+      // Por ahora, simulamos la URL del archivo
+      const fileUrl = `/uploads/${Date.now()}-${fileName}`;
+
+      const document = await storage.createCertificationDocument({
+        fileName,
+        fileSize,
+        fileType,
+        fileUrl,
+        certificationId: certificationId || null,
+        providerId: providerId || null,
+        uploadedBy: userId,
+        description: description || null,
+        category: category || 'general',
+      });
+
+      res.json(document);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/certification-documents/:id", requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCertificationDocument(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Login Configuration
   app.get("/api/login-config", async (_req: Request, res: Response) => {
     try {
@@ -1119,7 +1172,7 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/login-config", requireRole('admin'), async (req: Request, res: Response) => {
     try {
       const data = req.body;
-      const updatedBy = (req.user as any)?.username || 'system';
+      const updatedBy = req.session.user?.username || 'system';
       
       const config = await storage.upsertLoginConfig({
         ...data,

@@ -26,6 +26,7 @@ import {
   Wifi,
   ClipboardCheck,
   Settings,
+  BarChart,
   type LucideIcon
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -47,6 +48,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   QrCode,
   Wifi,
   Settings,
+  BarChart,
 };
 
 export function AppSidebar() {

@@ -330,6 +330,21 @@ export const insertPackagingComponentSchema = createInsertSchema(packagingCompon
   createdAt: true,
 });
 
+// Certification Documents table
+export const certificationDocuments = pgTable("certification_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  certificationId: varchar("certification_id").references(() => certifications.id),
+  providerId: varchar("provider_id").references(() => providers.id),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileType: text("file_type").notNull(),
+  fileUrl: text("file_url").notNull(),
+  uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
+  description: text("description"),
+  category: text("category").default("general"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Login Configuration Table
 export const loginConfig = pgTable("login_config", {
   id: serial("id").primaryKey(),
@@ -338,6 +353,11 @@ export const loginConfig = pgTable("login_config", {
   subtitle: text("subtitle").default("Plataforma profesional de trazabilidad NFC y gestión de cumplimiento ambiental según Ley 20.920"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   updatedBy: varchar("updated_by"),
+});
+
+export const insertCertificationDocumentSchema = createInsertSchema(certificationDocuments).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertLoginConfigSchema = createInsertSchema(loginConfig).omit({
@@ -381,6 +401,9 @@ export type Shipment = typeof shipments.$inferSelect;
 
 export type InsertPackagingComponent = z.infer<typeof insertPackagingComponentSchema>;
 export type PackagingComponent = typeof packagingComponents.$inferSelect;
+
+export type InsertCertificationDocument = z.infer<typeof insertCertificationDocumentSchema>;
+export type CertificationDocument = typeof certificationDocuments.$inferSelect;
 
 export type InsertLoginConfig = z.infer<typeof insertLoginConfigSchema>;
 export type LoginConfig = typeof loginConfig.$inferSelect;

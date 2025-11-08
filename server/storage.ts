@@ -13,10 +13,11 @@ import {
   type ActivityLog, type InsertActivityLog,
   type Shipment, type InsertShipment,
   type PackagingComponent, type InsertPackagingComponent,
+  type CertificationDocument, type InsertCertificationDocument,
   type LoginConfig, type InsertLoginConfig,
   users, companies, nfcTags, providers, cpsCatalog, certifications,
   workflowHistory, nfcEvents, esgMetrics, activityLog,
-  shipments, packagingComponents, loginConfig
+  shipments, packagingComponents, certificationDocuments, loginConfig
 } from "@shared/schema";
 
 export interface IStorage {
@@ -91,6 +92,11 @@ export interface IStorage {
   getComponentsByShipment(shipmentId: string): Promise<PackagingComponent[]>;
   createPackagingComponent(component: InsertPackagingComponent): Promise<PackagingComponent>;
   createMultipleComponents(components: InsertPackagingComponent[]): Promise<PackagingComponent[]>;
+
+  // Certification Documents
+  getCertificationDocuments(certificationId?: string, providerId?: string): Promise<CertificationDocument[]>;
+  createCertificationDocument(doc: InsertCertificationDocument): Promise<CertificationDocument>;
+  deleteCertificationDocument(id: string): Promise<void>;
 
   // Login Configuration
   getLoginConfig(): Promise<LoginConfig | undefined>;
@@ -342,6 +348,26 @@ export class DatabaseStorage implements IStorage {
 
   async createMultipleComponents(insertComponents: InsertPackagingComponent[]): Promise<PackagingComponent[]> {
     return await db.insert(packagingComponents).values(insertComponents).returning();
+  }
+
+  // Certification Documents
+  async getCertificationDocuments(certificationId?: string, providerId?: string): Promise<CertificationDocument[]> {
+    if (certificationId) {
+      return await db.select().from(certificationDocuments).where(eq(certificationDocuments.certificationId, certificationId));
+    } else if (providerId) {
+      return await db.select().from(certificationDocuments).where(eq(certificationDocuments.providerId, providerId));
+    } else {
+      return await db.select().from(certificationDocuments);
+    }
+  }
+
+  async createCertificationDocument(doc: InsertCertificationDocument): Promise<CertificationDocument> {
+    const [document] = await db.insert(certificationDocuments).values(doc).returning();
+    return document;
+  }
+
+  async deleteCertificationDocument(id: string): Promise<void> {
+    await db.delete(certificationDocuments).where(eq(certificationDocuments.id, id));
   }
 
   // Login Configuration
