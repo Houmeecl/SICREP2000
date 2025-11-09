@@ -29,6 +29,30 @@ SICREP transforms this compliance burden into competitive advantage through:
 - ESG analytics and benchmarking capabilities
 - Automated RETC reporting and compliance management
 
+## Deploy a Producción
+
+**Pasos después de publicar (Deploy):**
+
+1. **Migrar base de datos de producción:**
+   ```bash
+   npm run db:push
+   ```
+   Esto creará las nuevas tablas NFC (productCatalog, productionBatches, nfcValidations)
+
+2. **Crear usuarios y datos demo (opcional):**
+   ```bash
+   npm run db:seed
+   ```
+   
+3. **Credenciales de acceso:**
+   - Demo/Proveedor: sicrep@sicrep.cl / demo123
+   - Admin: admin@sicrep.cl / admin123
+   - Evaluador: evaluador@sicrep.cl / evaluador123
+   - Auditor: auditor@sicrep.cl / auditor123
+   - CPS: cps@sicrep.cl / cps123
+
+**Nota:** Las nuevas funcionalidades interactivas (Calculadora REP, Demo QR) son solo frontend y funcionan inmediatamente sin cambios en BD.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
