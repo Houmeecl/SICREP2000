@@ -1,3 +1,7 @@
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { getDashboardForRole } from "@/lib/role-routing";
 import DashboardStats from "@/components/DashboardStats";
 import CertificationWorkflow from "@/components/CertificationWorkflow";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +11,18 @@ import { Bell, Calendar, FileText, TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Redirigir automáticamente al dashboard específico según el rol
+  useEffect(() => {
+    if (user) {
+      const specificDashboard = getDashboardForRole(user.role);
+      if (specificDashboard !== "/dashboard") {
+        setLocation(specificDashboard);
+      }
+    }
+  }, [user, setLocation]);
   const { data: activities = [] } = useQuery<any[]>({
     queryKey: ["/api/activity"],
   });
