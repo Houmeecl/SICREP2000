@@ -15,8 +15,10 @@ import {
   insertShipmentSchema,
   insertPackagingComponentSchema,
   insertLoginConfigSchema,
+  insertCertificationRequestSchema,
 } from "@shared/schema";
 import bcrypt from "bcrypt";
+import multer from "multer";
 import {
   calculatePackagingMetrics,
   generateShipmentCode,
@@ -28,6 +30,7 @@ import QRCode from "qrcode";
 import { generateOfficialREPCertificate, generateEvaluationReport } from "./pdf-generator";
 import { calculateESGMetrics, calculateAggregatedESG } from "./esg-calculator";
 import { generateESGReport } from "./esg-pdf-generator";
+import { CertificationRequestService } from "./services/certificationRequests";
 
 // Helper to generate unique codes
 function generateCode(prefix: string, year: number, sequence: number): string {
@@ -56,6 +59,26 @@ function requireRole(...allowedRoles: string[]) {
 }
 
 export function registerRoutes(app: Express): Server {
+  // Multer configuration for file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB
+      files: 5
+    },
+    fileFilter: (_req, file, cb) => {
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Tipo de archivo no permitido. Solo PDF, JPG y PNG'));
+      }
+    }
+  });
+
+  // Initialize certification request service
+  const certificationRequestService = new CertificationRequestService(storage);
+
   // Auth routes
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
@@ -1441,6 +1464,126 @@ export function registerRoutes(app: Express): Server {
 
       res.status(201).json(validation);
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // ========== CERTIFICATION REQUESTS ROUTES ==========
+  // Public route - no authentication required
+  app.post("/api/public/certification-requests", upload.array('documents', 5), async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertCertificationRequestSchema.parse(req.body);
+      
+      const files = req.files as Express.Multer.File[];
+      const documents = files ? files.map(file => ({
+        fileName: file.originalname,
+        fileSize: file.size,
+        fileType: file.mimetype,
+        fileData: file.buffer.toString('base64'),
+        category: file.fieldname || 'otros'
+      })) : [];
+
+      const request = await certificationRequestService.createRequest(validatedData, documents);
+
+      res.status(201).json({ 
+        success: true,
+        requestId: request.id,
+        message: 'Solicitud de certificación creada exitosamente'
+      });
+    } catch (error: any) {
+      console.error('Error creating certification request:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get all certification requests (admin/evaluador/auditor only)
+  app.get("/api/certification-requests", requireRole('admin', 'evaluador', 'auditor'), async (req: Request, res: Response) => {
+    try {
+      const { status } = req.query;
+      const requests = await storage.getAllCertificationRequests();
+      
+      const filtered = status 
+        ? requests.filter(r => r.status === status)
+        : requests;
+      
+      res.json(filtered);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get single certification request with documents (admin/evaluador/auditor only)
+  app.get("/api/certification-requests/:id", requireRole('admin', 'evaluador', 'auditor'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const request = await storage.getCertificationRequest(id);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Solicitud no encontrada" });
+      }
+
+      const documents = await storage.getRequestDocuments(id);
+      
+      res.json({
+        ...request,
+        documents
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Approve certification request (admin only)
+  app.post("/api/certification-requests/:id/approve", requireRole('admin'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { reviewNotes } = req.body;
+      const userId = req.session.user!.id;
+
+      const result = await certificationRequestService.approveRequest(id, userId, reviewNotes);
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.error });
+      }
+
+      res.json({
+        success: true,
+        message: 'Solicitud aprobada exitosamente',
+        username: result.username,
+        tempPassword: result.tempPassword,
+        userId: result.userId,
+        providerId: result.providerId,
+        certificationId: result.certificationId
+      });
+    } catch (error: any) {
+      console.error('Error approving certification request:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Reject certification request (admin only)
+  app.post("/api/certification-requests/:id/reject", requireRole('admin'), async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { reviewNotes } = req.body;
+
+      if (!reviewNotes || reviewNotes.trim() === '') {
+        return res.status(400).json({ message: 'Las notas de revisión son requeridas para rechazar una solicitud' });
+      }
+
+      const userId = req.session.user!.id;
+      const result = await certificationRequestService.rejectRequest(id, userId, reviewNotes);
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.error });
+      }
+
+      res.json({
+        success: true,
+        message: 'Solicitud rechazada'
+      });
+    } catch (error: any) {
+      console.error('Error rejecting certification request:', error);
       res.status(500).json({ message: error.message });
     }
   });

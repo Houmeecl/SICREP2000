@@ -18,10 +18,12 @@ import {
   type NFCValidation, type InsertNFCValidation,
   type CertificationDocument, type InsertCertificationDocument,
   type LoginConfig, type InsertLoginConfig,
+  type CertificationRequest, type InsertCertificationRequest,
+  type RequestDocument, type InsertRequestDocument,
   users, companies, nfcTags, providers, cpsCatalog, certifications,
   workflowHistory, nfcEvents, esgMetrics, activityLog,
   shipments, packagingComponents, productCatalog, productionBatches, nfcValidations,
-  certificationDocuments, loginConfig
+  certificationDocuments, loginConfig, certificationRequests, requestDocuments
 } from "@shared/schema";
 
 export interface IStorage {
@@ -130,6 +132,18 @@ export interface IStorage {
   // Login Configuration
   getLoginConfig(): Promise<LoginConfig | undefined>;
   upsertLoginConfig(config: InsertLoginConfig): Promise<LoginConfig>;
+
+  // Certification Requests
+  getCertificationRequest(id: string): Promise<CertificationRequest | undefined>;
+  getAllCertificationRequests(): Promise<CertificationRequest[]>;
+  getCertificationRequestsByStatus(status: string): Promise<CertificationRequest[]>;
+  createCertificationRequest(request: InsertCertificationRequest): Promise<CertificationRequest>;
+  updateCertificationRequest(id: string, request: Partial<CertificationRequest>): Promise<CertificationRequest | undefined>;
+
+  // Request Documents
+  getRequestDocuments(requestId: string): Promise<RequestDocument[]>;
+  createRequestDocument(doc: InsertRequestDocument): Promise<RequestDocument>;
+  createMultipleRequestDocuments(docs: InsertRequestDocument[]): Promise<RequestDocument[]>;
 
   // Dashboard Statistics
   getDashboardStats(): Promise<{
@@ -508,6 +522,46 @@ export class DatabaseStorage implements IStorage {
       const [created] = await db.insert(loginConfig).values(config).returning();
       return created;
     }
+  }
+
+  // Certification Requests
+  async getCertificationRequest(id: string): Promise<CertificationRequest | undefined> {
+    const [request] = await db.select().from(certificationRequests).where(eq(certificationRequests.id, id));
+    return request;
+  }
+
+  async getAllCertificationRequests(): Promise<CertificationRequest[]> {
+    return await db.select().from(certificationRequests);
+  }
+
+  async getCertificationRequestsByStatus(status: "pending" | "reviewing" | "approved" | "rejected"): Promise<CertificationRequest[]> {
+    return await db.select().from(certificationRequests).where(eq(certificationRequests.status, status));
+  }
+
+  async createCertificationRequest(insertRequest: InsertCertificationRequest): Promise<CertificationRequest> {
+    const [request] = await db.insert(certificationRequests).values(insertRequest).returning();
+    return request;
+  }
+
+  async updateCertificationRequest(id: string, requestData: Partial<CertificationRequest>): Promise<CertificationRequest | undefined> {
+    const [request] = await db.update(certificationRequests).set(requestData).where(eq(certificationRequests.id, id)).returning();
+    return request;
+  }
+
+  // Request Documents
+  async getRequestDocuments(requestId: string): Promise<RequestDocument[]> {
+    return await db.select().from(requestDocuments).where(eq(requestDocuments.requestId, requestId));
+  }
+
+  async createRequestDocument(insertDoc: InsertRequestDocument): Promise<RequestDocument> {
+    const [doc] = await db.insert(requestDocuments).values(insertDoc).returning();
+    return doc;
+  }
+
+  async createMultipleRequestDocuments(docs: InsertRequestDocument[]): Promise<RequestDocument[]> {
+    if (docs.length === 0) return [];
+    const created = await db.insert(requestDocuments).values(docs).returning();
+    return created;
   }
 
   // Dashboard Statistics

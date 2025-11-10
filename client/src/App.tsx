@@ -31,6 +31,8 @@ import ValidateNFC from "@/pages/ValidateNFC";
 import LoginSettings from "@/pages/LoginSettings";
 import Reports from "@/pages/Reports";
 import Manual from "@/pages/Manual";
+import SolicitarCertificacion from "@/pages/SolicitarCertificacion";
+import Solicitudes from "@/pages/admin/Solicitudes";
 import NotFound from "@/pages/not-found";
 
 // Role-specific dashboards
@@ -56,6 +58,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/verify" component={TraceabilityLanding} />
+      <Route path="/solicitar-certificacion" component={SolicitarCertificacion} />
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
@@ -109,6 +112,11 @@ function Router() {
       <Route path="/login-settings">
         <ProtectedRoute allowedRoles={['admin']}>
           <LoginSettings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/admin/solicitudes">
+        <ProtectedRoute allowedRoles={['admin']}>
+          <Solicitudes />
         </ProtectedRoute>
       </Route>
       <Route path="/packaging">
@@ -218,7 +226,7 @@ function Router() {
 
 export default function App() {
   const [location] = useLocation();
-  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location.startsWith("/validate/") || location === "/validate-nfc";
+  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location === "/solicitar-certificacion" || location.startsWith("/validate/") || location === "/validate-nfc";
   
   const style = {
     "--sidebar-width": "16rem",

@@ -16,6 +16,7 @@ export type PanelId =
   | 'roles'
   | 'user-management'
   | 'login-settings'
+  | 'solicitudes'
   | 'packaging'
   | 'shipments'
   | 'validate-qr'
@@ -169,6 +170,15 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     category: 'administracion',
     isAdmin: true,
   },
+  {
+    id: 'solicitudes',
+    name: 'Solicitudes',
+    path: '/admin/solicitudes',
+    icon: 'ClipboardCheck',
+    description: 'Gestión de solicitudes de certificación',
+    category: 'administracion',
+    isAdmin: true,
+  },
 ];
 
 /**
@@ -190,6 +200,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'roles',
     'user-management',
     'login-settings',
+    'solicitudes',
     'validate-qr',
     'validate-nfc',
   ],
