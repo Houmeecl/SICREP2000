@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AppBreadcrumbs } from "@/components/AppBreadcrumbs";
 import ThemeToggle from "@/components/ThemeToggle";
 import UserMenu from "@/components/UserMenu";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -232,7 +233,10 @@ export default function App() {
                 <AppSidebar />
                 <div className="flex flex-col flex-1 overflow-hidden">
                   <header className="flex items-center justify-between p-4 border-b bg-background">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
+                    <div className="flex items-center gap-4">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" />
+                      <AppBreadcrumbs />
+                    </div>
                     <div className="flex items-center gap-2">
                       <ThemeToggle />
                       <UserMenu />
