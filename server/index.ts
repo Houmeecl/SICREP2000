@@ -27,15 +27,21 @@ declare module 'http' {
 }
 
 // Session configuration
+const sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret && process.env.NODE_ENV === "production") {
+  throw new Error("SESSION_SECRET must be set in production environment");
+}
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "sicrep-secret-key-change-in-production",
+    secret: sessionSecret || "sicrep-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: "lax",
     },
   })
 );
