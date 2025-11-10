@@ -472,20 +472,41 @@ export function registerRoutes(app: Express): Server {
         return res.status(404).json({ message: "Certificación no encontrada" });
       }
       
+      // Official 10-phase workflow according to SICREP_Workflow_Completo
       const phaseOrder = [
         "solicitud_inicial",
-        "asignacion_cps",
-        "evaluacion_documentos",
-        "evaluacion_operativa",
-        "evaluacion_valor_agregado",
-        "revision_final",
+        "revision_documental",
+        "evaluacion_preliminar",
+        "visita_terreno",
+        "analisis_cumplimiento",
+        "dictamen_tecnico",
+        "aprobacion_comite",
         "emision_certificado",
-        "activacion_nfc",
         "publicacion",
-        "monitoreo_continuo"
+        "seguimiento"
       ];
       
-      const currentIndex = phaseOrder.indexOf(cert.currentPhase || "solicitud_inicial");
+      // Terminal states that cannot advance - check BEFORE normalization
+      const terminalStates = ["rechazado", "expirado", "seguimiento"];
+      if (terminalStates.includes(cert.status) || terminalStates.includes(cert.currentPhase || "")) {
+        return res.status(400).json({ message: "La certificación está en un estado terminal y no puede avanzar" });
+      }
+      
+      // Handle draft and other initial states AFTER terminal check
+      let currentPhase = cert.currentPhase;
+      if (!currentPhase || currentPhase === "draft") {
+        currentPhase = "solicitud_inicial";
+      }
+      
+      const currentIndex = phaseOrder.indexOf(currentPhase);
+      
+      // If phase not found in order, reset to initial phase
+      if (currentIndex === -1) {
+        return res.status(400).json({ 
+          message: `Fase actual '${currentPhase}' no es válida. Por favor contacte al administrador.` 
+        });
+      }
+      
       const nextPhase = phaseOrder[currentIndex + 1];
       
       if (!nextPhase) {
@@ -497,19 +518,16 @@ export function registerRoutes(app: Express): Server {
         status: nextPhase,
       };
       
-      // Generate NFC tag and blockchain hash when activating NFC
-      if (nextPhase === "activacion_nfc") {
+      // Set issued date and generate NFC when emitting certificate
+      if (nextPhase === "emision_certificado") {
+        updates.issuedAt = new Date();
+        updates.expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
+        
         const allCerts = await storage.getAllCertifications();
         const sequence = allCerts.length;
         updates.nfcTag = generateNFCTagUtil(sequence);
         updates.blockchainHash = generateBlockchainHashUtil();
         updates.qrCode = `QR-${updates.nfcTag}`;
-      }
-      
-      // Set issued date when emitting certificate
-      if (nextPhase === "emision_certificado") {
-        updates.issuedAt = new Date();
-        updates.expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year
       }
       
       const updatedCert = await storage.updateCertification(id, updates);
