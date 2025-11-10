@@ -546,9 +546,9 @@ export default function SolicitarCertificacion() {
 
                   <div>
                     <h3 className="font-semibold mb-3">Documentos Adjuntos</h3>
-                    {form.watch("documents") && form.watch("documents").length > 0 ? (
+                    {form.watch("documents") && form.watch("documents")?.length > 0 ? (
                       <ul className="space-y-1">
-                        {Array.from(form.watch("documents")).map((file, index) => (
+                        {Array.from(form.watch("documents") || []).map((file, index) => (
                           <li key={index} className="text-sm flex items-center gap-2" data-testid={`review-file-${index}`}>
                             <FileText className="w-4 h-4" />
                             {file.name} ({(file.size / 1024).toFixed(1)} KB)
