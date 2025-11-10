@@ -568,23 +568,26 @@ export default function Procedimientos() {
                 ))}
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-semibold mb-2">SLA (Service Level Agreement)</h4>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <p className="font-medium">Tiempo Mínimo</p>
-                    <p className="text-2xl font-bold text-primary">30 días</p>
+              <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <Clock className="h-4 w-4" />
+                <AlertTitle>SLA (Service Level Agreement)</AlertTitle>
+                <AlertDescription>
+                  <div className="grid grid-cols-3 gap-4 text-sm mt-2">
+                    <div>
+                      <p className="font-medium">Tiempo Mínimo</p>
+                      <p className="text-2xl font-bold text-primary">30 días</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Tiempo Promedio</p>
+                      <p className="text-2xl font-bold text-chart-2">38 días</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Tiempo Máximo</p>
+                      <p className="text-2xl font-bold text-chart-3">45 días</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Tiempo Promedio</p>
-                    <p className="text-2xl font-bold text-chart-2">38 días</p>
-                  </div>
-                  <div>
-                    <p className="font-medium">Tiempo Máximo</p>
-                    <p className="text-2xl font-bold text-chart-3">45 días</p>
-                  </div>
-                </div>
-              </div>
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </TabsContent>
