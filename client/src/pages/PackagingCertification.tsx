@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Package, Plus, Trash2, CheckCircle, QrCode } from "lucide-react";
+import { Package, Plus, Trash2, CheckCircle, QrCode, ArrowLeft } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
 
 interface PackagingComponent {
@@ -51,6 +53,7 @@ const MATERIALS = [
 
 export default function PackagingCertification() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [components, setComponents] = useState<PackagingComponent[]>([]);
   const [showQRDialog, setShowQRDialog] = useState(false);
   const [certifiedShipment, setCertifiedShipment] = useState<any>(null);
@@ -669,7 +672,7 @@ export default function PackagingCertification() {
               Despacho Certificado
             </DialogTitle>
             <DialogDescription>
-              El despacho ha sido certificado exitosamente
+              El despacho ha sido certificado exitosamente con QR y NFC
             </DialogDescription>
           </DialogHeader>
 
@@ -703,6 +706,26 @@ export default function PackagingCertification() {
               </div>
             </div>
           )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowQRDialog(false)}
+              data-testid="button-close-dialog"
+            >
+              Cerrar
+            </Button>
+            <Button
+              onClick={() => {
+                setShowQRDialog(false);
+                setLocation("/dashboard");
+              }}
+              data-testid="button-back-to-dashboard"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Volver al Dashboard
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
