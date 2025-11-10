@@ -33,6 +33,7 @@ import Reports from "@/pages/Reports";
 import Manual from "@/pages/Manual";
 import Procedimientos from "@/pages/Procedimientos";
 import SolicitarCertificacion from "@/pages/SolicitarCertificacion";
+import AutoEvaluacion from "@/pages/AutoEvaluacion";
 import Solicitudes from "@/pages/admin/Solicitudes";
 import NotFound from "@/pages/not-found";
 
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/verify" component={TraceabilityLanding} />
       <Route path="/solicitar-certificacion" component={SolicitarCertificacion} />
+      <Route path="/auto-evaluacion" component={AutoEvaluacion} />
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />

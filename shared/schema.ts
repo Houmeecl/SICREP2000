@@ -22,34 +22,10 @@ export const userRoleEnum = pgEnum("user_role", [
   "supervisor"
 ]);
 
-export const certificationStatusEnum = pgEnum("certification_status", [
-  "draft",
-  "solicitud_inicial",
-  "asignacion_cps",
-  "evaluacion_documentos",
-  "evaluacion_operativa",
-  "evaluacion_valor_agregado",
-  "revision_final",
-  "emision_certificado",
-  "activacion_nfc",
-  "publicado",
-  "monitoreo_continuo",
-  "rechazado",
-  "expirado"
-]);
-
-export const workflowPhaseEnum = pgEnum("workflow_phase", [
-  "solicitud_inicial",
-  "asignacion_cps",
-  "evaluacion_documentos",
-  "evaluacion_operativa",
-  "evaluacion_valor_agregado",
-  "revision_final",
-  "emision_certificado",
-  "activacion_nfc",
-  "publicacion",
-  "monitoreo_continuo"
-]);
+// Changed from enum to text for flexibility in workflow phases
+// Valid values: draft, solicitud_inicial, revision_documental, evaluacion_preliminar,
+// visita_terreno, analisis_cumplimiento, dictamen_tecnico, aprobacion_comite,
+// emision_certificado, publicacion, seguimiento, rechazado, expirado
 
 export const providerStatusEnum = pgEnum("provider_status", [
   "normal",
@@ -183,8 +159,8 @@ export const certifications = pgTable("certifications", {
   code: text("code").notNull().unique(),
   providerId: varchar("provider_id").notNull().references(() => providers.id),
   cpsId: varchar("cps_id").notNull().references(() => cpsCatalog.id),
-  status: certificationStatusEnum("status").notNull().default("draft"),
-  currentPhase: workflowPhaseEnum("current_phase"),
+  status: text("status").notNull().default("draft"),
+  currentPhase: text("current_phase"),
   scoreDocumentales: integer("score_documentales").default(0),
   scoreOperativos: integer("score_operativos").default(0),
   scoreValorAgregado: integer("score_valor_agregado").default(0),
@@ -204,7 +180,7 @@ export const certifications = pgTable("certifications", {
 export const workflowHistory = pgTable("workflow_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   certificationId: varchar("certification_id").notNull().references(() => certifications.id),
-  phase: workflowPhaseEnum("phase").notNull(),
+  phase: text("phase").notNull(),
   status: text("status").notNull(),
   userId: varchar("user_id").notNull().references(() => users.id),
   notes: text("notes"),

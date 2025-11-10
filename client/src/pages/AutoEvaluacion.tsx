@@ -107,7 +107,7 @@ const QUESTIONS: Question[] = [
 ];
 
 export default function AutoEvaluacion() {
-  const [, navigate] = useState();
+  const [, navigate] = useLocation();
   const [answers, setAnswers] = useState<Record<string, string | boolean>>({});
   const [showResults, setShowResults] = useState(false);
 

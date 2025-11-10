@@ -5,12 +5,28 @@
 SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibility) compliance certification in Chile, targeting the mining industry and its suppliers. The system facilitates end-to-end certification for packaging materials under Law 20.920, with specialized features for providers handling less than 300kg annually. It addresses the legal requirement for accurate weight/materiality data reporting to RETC, mitigating potential fines.
 
 **Latest Updates (November 2025):**
+- ✅ **NEW: Auto-Evaluación REP** - Herramienta pública para empresas en `/auto-evaluacion`
+  - Cuestionario interactivo de 8 preguntas sobre cumplimiento REP
+  - Categorías: Información Legal, Cumplimiento REP, Documentación, Sostenibilidad
+  - Sistema de puntuación sobre 100 pts con categorización automática
+  - Resultados: Listo (>=80%), Casi Listo (>=60%), Requiere Preparación (<60%)
+  - Recomendaciones personalizadas según respuestas
+  - Botón directo a solicitud de certificación si cumple requisitos
+  - Accesible sin autenticación
+- ✅ **FIXED: Workflow de Certificación** - Actualizado según documento oficial SICREP_Workflow_Completo
+  - **10 Fases Correctas**: Solicitud Inicial, Revisión Documental, Evaluación Preliminar (40pts),
+    Visita en Terreno (40pts), Análisis de Cumplimiento (100pts), Dictamen Técnico,
+    Aprobación Comité, Emisión Certificado, Publicación, Seguimiento (12 meses)
+  - Sistema de puntuación: Documental 40pts + Operativo 40pts + Valor Agregado 20pts = 100pts
+  - Categorización: Verde (>=85pts), Amarillo (70-84pts), Rojo (<70pts)
+  - SLAs y responsables actualizados según documento oficial
+  - Schema migrado de enum a text para mayor flexibilidad
 - ✅ **NEW: Guía de Evaluación en Detalle de Certificación** - Sistema contextual que muestra qué evaluar
   - Alert destacado con información específica de la fase actual
-  - **Checklist de Verificación**: Lista detallada de items a revisar
-  - **Documentos Requeridos**: Qué archivos descargar y revisar
-  - **Acciones a Realizar**: Paso a paso de qué hacer (ej: descargar, verificar, aprobar/rechazar)
-  - Específico para cada fase (10 fases con instrucciones diferentes)
+  - **Checklist de Verificación**: Items detallados basados en documento oficial (ej: POE información a clientes 4pts - CRÍTICO)
+  - **Documentos Requeridos**: Lista exacta según fase (e-RUT, Certificado RETC, Certificado SMA, etc.)
+  - **Acciones a Realizar**: Paso a paso con decisiones (APROBAR/RECHAZAR/CON OBSERVACIONES)
+  - Específico para cada fase (10 fases con criterios de evaluación oficiales)
   - Visible en `/certifications/:id` para roles admin/evaluador/auditor
 - ✅ **NEW: Manual de Procedimientos SICREP** - Hub completo de conocimiento en `/procedimientos`
   - 6 tabs especializadas: Empresas, Administradores, Workflow, Roles, Trazabilidad, Soporte

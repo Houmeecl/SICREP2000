@@ -16,16 +16,16 @@ interface WorkflowPhase {
 }
 
 const WORKFLOW_PHASES = [
-  { id: "1", key: "solicitud_inicial", name: "Solicitud Inicial", sla: "24h", responsible: "Cliente Minería" },
-  { id: "2", key: "asignacion_cps", name: "Asignación CPS", sla: "48h", responsible: "Admin" },
-  { id: "3", key: "evaluacion_documentos", name: "Evaluación Documentos", sla: "72h", responsible: "Evaluador" },
-  { id: "4", key: "evaluacion_operativa", name: "Evaluación Operativa", sla: "96h", responsible: "Auditor" },
-  { id: "5", key: "evaluacion_valor_agregado", name: "Evaluación Valor Agregado", sla: "48h", responsible: "Comité" },
-  { id: "6", key: "revision_final", name: "Revisión Final", sla: "24h", responsible: "Gerente General" },
-  { id: "7", key: "emision_certificado", name: "Emisión Certificado", sla: "12h", responsible: "Sistema" },
-  { id: "8", key: "activacion_nfc", name: "Activación NFC", sla: "6h", responsible: "Sistema" },
-  { id: "9", key: "publicado", name: "Publicación", sla: "1h", responsible: "Sistema" },
-  { id: "10", key: "monitoreo_continuo", name: "Monitoreo Continuo", sla: "Continuo", responsible: "Sistema" },
+  { id: "1", key: "solicitud_inicial", name: "Solicitud Inicial", sla: "1 día", responsible: "Sistema/Comercial" },
+  { id: "2", key: "revision_documental", name: "Revisión Documental", sla: "2-3 días", responsible: "Analista Documental" },
+  { id: "3", key: "evaluacion_preliminar", name: "Evaluación Preliminar", sla: "3-4 días", responsible: "Evaluador" },
+  { id: "4", key: "visita_terreno", name: "Visita en Terreno", sla: "1-2 días", responsible: "Auditor de Campo" },
+  { id: "5", key: "analisis_cumplimiento", name: "Análisis Cumplimiento", sla: "2-3 días", responsible: "Analista Senior" },
+  { id: "6", key: "dictamen_tecnico", name: "Dictamen Técnico", sla: "2 días", responsible: "Jefe Técnico" },
+  { id: "7", key: "aprobacion_comite", name: "Aprobación Comité", sla: "3-5 días", responsible: "Comité Certificación" },
+  { id: "8", key: "emision_certificado", name: "Emisión Certificado", sla: "1 día", responsible: "Sistema/Admin" },
+  { id: "9", key: "publicacion", name: "Publicación", sla: "1 día", responsible: "Sistema" },
+  { id: "10", key: "seguimiento", name: "Seguimiento", sla: "12 meses", responsible: "Área Calidad" },
 ];
 
 export default function CertificationWorkflow() {

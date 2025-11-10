@@ -23,16 +23,16 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth";
 
 const WORKFLOW_PHASES = [
-  { key: "solicitud_inicial", name: "Solicitud Inicial", sla: "24h", responsible: "Cliente Minería" },
-  { key: "asignacion_cps", name: "Asignación CPS", sla: "48h", responsible: "Admin" },
-  { key: "evaluacion_documentos", name: "Evaluación Documentos", sla: "72h", responsible: "Evaluador" },
-  { key: "evaluacion_operativa", name: "Evaluación Operativa", sla: "96h", responsible: "Auditor" },
-  { key: "evaluacion_valor_agregado", name: "Evaluación Valor Agregado", sla: "48h", responsible: "Comité" },
-  { key: "revision_final", name: "Revisión Final", sla: "24h", responsible: "Gerente General" },
-  { key: "emision_certificado", name: "Emisión Certificado", sla: "12h", responsible: "Sistema" },
-  { key: "activacion_nfc", name: "Activación NFC", sla: "6h", responsible: "Sistema" },
-  { key: "publicado", name: "Publicación", sla: "1h", responsible: "Sistema" },
-  { key: "monitoreo_continuo", name: "Monitoreo Continuo", sla: "Continuo", responsible: "Sistema" },
+  { key: "solicitud_inicial", name: "Solicitud Inicial", sla: "1 día", responsible: "Sistema/Comercial" },
+  { key: "revision_documental", name: "Revisión Documental Inicial", sla: "2-3 días", responsible: "Analista Documental" },
+  { key: "evaluacion_preliminar", name: "Evaluación Preliminar", sla: "3-4 días", responsible: "Evaluador" },
+  { key: "visita_terreno", name: "Visita en Terreno", sla: "1-2 días + viaje", responsible: "Auditor de Campo" },
+  { key: "analisis_cumplimiento", name: "Análisis de Cumplimiento", sla: "2-3 días", responsible: "Analista Senior" },
+  { key: "dictamen_tecnico", name: "Dictamen Técnico", sla: "2 días", responsible: "Jefe Técnico" },
+  { key: "aprobacion_comite", name: "Aprobación Comité", sla: "3-5 días", responsible: "Comité de Certificación" },
+  { key: "emision_certificado", name: "Emisión de Certificado", sla: "1 día", responsible: "Sistema/Administrador" },
+  { key: "publicacion", name: "Publicación", sla: "1 día", responsible: "Sistema" },
+  { key: "seguimiento", name: "Seguimiento Post-Certificación", sla: "Continuo (12 meses)", responsible: "Sistema/Área de Calidad" },
 ];
 
 const PHASE_REQUIREMENTS: Record<string, {
@@ -43,194 +43,246 @@ const PHASE_REQUIREMENTS: Record<string, {
   actions: string[];
 }> = {
   "solicitud_inicial": {
-    title: "Recepción de Solicitud",
-    description: "Verificar que la solicitud inicial está completa",
+    title: "Fase 1: Solicitud Inicial",
+    description: "Cliente envía solicitud y sistema crea proyecto de certificación",
     checklist: [
       "Formulario de solicitud completado",
       "Datos empresariales válidos (RUT, nombre, industria)",
       "Contacto responsable identificado",
-      "Declaración de envases > 300 kg/año"
+      "Asignación automática de ID única"
     ],
     documentsRequired: [
-      "Formulario de solicitud firmado",
-      "Certificado SII vigente"
+      "Formulario de solicitud completo"
     ],
     actions: [
-      "Revisar datos empresariales",
-      "Validar RUT en SII",
-      "Confirmar contacto responsable",
-      "Avanzar a siguiente fase si todo está correcto"
+      "Crear proyecto en sistema",
+      "Asignar ID único de certificación",
+      "Notificar al cliente sobre inicio del proceso",
+      "Asignar analista documental responsable"
     ]
   },
-  "asignacion_cps": {
-    title: "Asignar Código CPS",
-    description: "Generar y asignar código único de certificación",
+  "revision_documental": {
+    title: "Fase 2: Revisión Documental Inicial",
+    description: "Verificación de documentos legales y cumplimiento inicial",
     checklist: [
-      "Código CPS generado automáticamente",
-      "Código único verificado",
-      "Proveedor vinculado correctamente"
-    ],
-    documentsRequired: [],
-    actions: [
-      "Verificar código CPS asignado",
-      "Confirmar vinculación con proveedor",
-      "Avanzar a evaluación de documentos"
-    ]
-  },
-  "evaluacion_documentos": {
-    title: "Evaluación de Documentación",
-    description: "Revisar y validar toda la documentación técnica presentada",
-    checklist: [
-      "Certificado de Inicio de Actividades (SII) vigente",
-      "Declaración jurada de envases/embalajes completa",
-      "Fichas técnicas de productos legibles y completas",
-      "Comprobante de pago procesado (si aplicable)",
-      "Todos los documentos firmados digitalmente"
+      "e-RUT vigente verificado (2 pts)",
+      "Certificado de vigencia sociedad < 30 días (2 pts)",
+      "Certificado RETC vigente (3 pts)",
+      "Certificado SMA sin sanciones (3 pts)",
+      "Validación de RUT en SII completada"
     ],
     documentsRequired: [
-      "Certificado SII",
-      "Declaración jurada",
-      "Fichas técnicas de productos",
-      "Comprobante de pago"
+      "e-RUT vigente",
+      "Certificado de vigencia de la sociedad",
+      "Certificado RETC",
+      "Certificado SMA",
+      "Documentos legales completos"
     ],
     actions: [
-      "Descargar y revisar cada documento adjunto",
-      "Verificar firmas digitales",
-      "Confirmar vigencia del Certificado SII",
-      "Validar coherencia de fichas técnicas",
-      "Si falta documentación, RECHAZAR con motivo específico",
-      "Si todo está completo, APROBAR y avanzar fase"
+      "Verificar documentos legales con checklist automático",
+      "Validar RUT en sistema SII",
+      "Verificar certificado RETC vigente",
+      "Verificar certificado SMA (sin sanciones)",
+      "Si falta documentación: RECHAZAR o solicitar CON OBSERVACIONES",
+      "Si todo está completo: APROBAR y avanzar a Fase 3"
     ]
   },
-  "evaluacion_operativa": {
-    title: "Auditoría Operativa",
-    description: "Verificación in-situ de procesos y operaciones",
+  "evaluacion_preliminar": {
+    title: "Fase 3: Evaluación Preliminar",
+    description: "Análisis de cumplimiento documental (40 pts)",
     checklist: [
-      "Instalaciones visitadas y verificadas",
-      "Procesos de manejo de envases documentados",
-      "Registros de peso/volumen validados",
-      "Cumplimiento de normativa ambiental",
-      "Personal capacitado identificado"
+      "POE información a clientes (4 pts) - CRÍTICO",
+      "Plantilla de reporte de envases (2 pts)",
+      "Plan de manejo de residuos (2 pts)",
+      "Sistema de información documentado (3 pts)",
+      "Procedimientos de control de calidad (3 pts)",
+      "Sistema ERP/registro de productos (4 pts)",
+      "Fichas técnicas completas (3 pts)"
     ],
     documentsRequired: [
-      "Informe de auditoría",
-      "Registro fotográfico de instalaciones",
-      "Certificados de capacitación del personal"
+      "POE información a clientes",
+      "Plantilla reporte envases",
+      "Plan manejo residuos",
+      "Procedimientos operativos",
+      "Fichas técnicas de productos"
     ],
     actions: [
-      "Coordinar visita in-situ",
-      "Inspeccionar instalaciones",
-      "Revisar registros operativos",
-      "Documentar hallazgos",
-      "Generar informe de auditoría",
-      "Subir informe y fotos"
+      "Evaluar criterios documentales (40 pts total)",
+      "Verificar procedimientos operativos",
+      "Revisar trazabilidad de información",
+      "Analizar políticas de sostenibilidad",
+      "Si puntaje >= 28 pts (70%): APROBAR para Visita en Terreno",
+      "Si puntaje < 28 pts: Solicitar Plan de Mejora"
     ]
   },
-  "evaluacion_valor_agregado": {
-    title: "Evaluación ESG y Valor Agregado",
-    description: "Calcular puntuación ESG y analizar impacto ambiental",
+  "visita_terreno": {
+    title: "Fase 4: Visita en Terreno",
+    description: "Evaluación operativa in-situ (40 pts)",
     checklist: [
-      "Scorecard ESG calculado",
-      "Puntos de sostenibilidad asignados",
-      "Impacto ambiental cuantificado",
-      "Certificaciones adicionales verificadas",
-      "Innovaciones documentadas"
+      "Puntos de reciclaje implementados (3 pts)",
+      "Señalética adecuada (2 pts)",
+      "Personal comercial capacitado (4 pts)",
+      "Personal logística capacitado (3 pts)",
+      "Instalaciones adecuadas (3 pts)",
+      "Equipamiento necesario (3 pts)",
+      "Permisos operacionales vigentes (3 pts)",
+      "Cumplimiento Ley REP (4 pts)"
     ],
     documentsRequired: [
-      "Scorecard ESG",
-      "Informe de sostenibilidad",
-      "Certificaciones ambientales (si aplica)"
+      "Informe de auditoría de campo",
+      "Registro fotográfico geolocalizado",
+      "Certificados de capacitación del personal",
+      "Firma digital del cliente"
     ],
     actions: [
-      "Calcular métricas ESG",
-      "Asignar puntuación total",
-      "Documentar prácticas sostenibles",
-      "Identificar oportunidades de mejora",
-      "Generar reporte ESG"
+      "Coordinar visita con cliente (48 hrs antes)",
+      "Realizar inspección en terreno con checklist",
+      "Evaluar criterios operativos (40 pts)",
+      "Capturar evidencias fotográficas geolocalizadas",
+      "Entrevistar al personal clave",
+      "Verificar infraestructura y cumplimiento",
+      "Generar reporte preliminar in-situ"
     ]
   },
-  "revision_final": {
-    title: "Revisión Final y Aprobación",
-    description: "Revisión ejecutiva de todo el proceso de certificación",
+  "analisis_cumplimiento": {
+    title: "Fase 5: Análisis de Cumplimiento",
+    description: "Consolidación y categorización (100 pts total)",
     checklist: [
-      "Todas las fases anteriores completadas",
-      "Documentación completa y aprobada",
-      "Auditoría operativa satisfactoria",
-      "Puntuación ESG asignada",
-      "Sin observaciones pendientes"
+      "Puntaje documental consolidado (40 pts)",
+      "Puntaje operativo consolidado (40 pts)",
+      "Puntaje valor agregado calculado (20 pts)",
+      "Puntaje total >= 70 pts (mínimo certificable)",
+      "Categorización aplicada (Verde/Amarillo/Rojo)",
+      "No conformidades identificadas"
     ],
     documentsRequired: [
-      "Resumen ejecutivo de certificación",
-      "Todos los documentos de fases anteriores"
+      "Reporte preliminar consolidado",
+      "Matriz de evaluación completa"
     ],
     actions: [
-      "Revisar historial completo de workflow",
-      "Verificar cumplimiento de todos los requisitos",
-      "Aprobar emisión de certificado",
-      "Autorizar avance a emisión"
+      "Consolidar puntajes de fases anteriores",
+      "Calcular score total sobre 100 pts",
+      "Categorizar: VERDE (>=85), AMARILLO (70-84), ROJO (<70)",
+      "Identificar no conformidades y brechas",
+      "Generar reporte preliminar para dictamen técnico",
+      "Si ROJO: Generar plan de acción correctivo"
+    ]
+  },
+  "dictamen_tecnico": {
+    title: "Fase 6: Dictamen Técnico",
+    description: "Elaboración de informe técnico completo",
+    checklist: [
+      "Informe técnico completo elaborado",
+      "Recomendaciones de mejora definidas",
+      "Plan de acción documentado (si aplica)",
+      "Presentación para comité preparada",
+      "Evidencias y anexos adjuntos"
+    ],
+    documentsRequired: [
+      "Informe técnico completo",
+      "Recomendaciones de mejora",
+      "Plan de acción (si categoría Amarilla)",
+      "Presentación ejecutiva para comité"
+    ],
+    actions: [
+      "Elaborar informe técnico completo",
+      "Redactar recomendaciones específicas",
+      "Definir plan de acción (si aplica)",
+      "Preparar presentación para Comité de Certificación",
+      "Adjuntar todas las evidencias documentales y fotográficas",
+      "Enviar a Comité para revisión"
+    ]
+  },
+  "aprobacion_comite": {
+    title: "Fase 7: Aprobación Comité",
+    description: "Revisión y votación del Comité de Certificación",
+    checklist: [
+      "Caso presentado al Comité de Certificación",
+      "Quórum mínimo alcanzado (3 de 5 miembros)",
+      "Deliberación completada",
+      "Votación realizada",
+      "Observaciones resueltas (si aplica)",
+      "Resolución emitida"
+    ],
+    documentsRequired: [
+      "Presentación ejecutiva",
+      "Informe técnico completo",
+      "Acta de reunión del Comité",
+      "Resolución firmada"
+    ],
+    actions: [
+      "Presentar caso al Comité de Certificación",
+      "Deliberar y votar (quórum: 3 de 5 miembros)",
+      "Resolver observaciones si las hay",
+      "Emitir resolución: APROBADO / APROBADO CON CONDICIONES / RECHAZADO / DIFERIDO",
+      "Si APROBADO o APROBADO CON CONDICIONES: Avanzar a Emisión",
+      "Si RECHAZADO: Notificar cliente con derecho a apelación (15 días)",
+      "Si DIFERIDO: Solicitar más información y volver a Dictamen Técnico"
     ]
   },
   "emision_certificado": {
-    title: "Emisión del Certificado REP",
-    description: "Generación automática del certificado oficial",
+    title: "Fase 8: Emisión de Certificado",
+    description: "Generación automática del certificado oficial REP",
     checklist: [
-      "Certificado PDF generado",
-      "Código QR incluido",
+      "Certificado PDF generado con template oficial",
+      "Código QR único creado",
+      "Hash blockchain registrado (Polygon Mumbai)",
       "Firma digital aplicada",
-      "Fecha de emisión y vencimiento establecidas"
+      "Certificado almacenado en sistema",
+      "Vigencia establecida (12 meses)"
     ],
-    documentsRequired: [],
+    documentsRequired: [
+      "Certificado PDF oficial firmado digitalmente"
+    ],
     actions: [
-      "El sistema generará automáticamente el certificado",
-      "Verificar que el PDF se generó correctamente",
-      "Confirmar fecha de vencimiento (1 año)"
+      "Generar certificado PDF con template oficial",
+      "Crear QR code único para validación pública",
+      "Registrar hash en blockchain (Polygon Mumbai)",
+      "Aplicar firma digital al documento",
+      "Almacenar certificado en sistema seguro",
+      "Tiempo máximo de emisión: 24 horas"
     ]
   },
-  "activacion_nfc": {
-    title: "Activación de Tecnología NFC",
-    description: "Generación de tags NFC y códigos blockchain",
+  "publicacion": {
+    title: "Fase 9: Publicación",
+    description: "Publicación en portal público y notificación al cliente",
     checklist: [
-      "Tag NFC generado",
-      "Código QR generado",
-      "Hash blockchain creado",
-      "Trazabilidad activada"
+      "Certificado publicado en portal público",
+      "Validación por QR habilitada",
+      "Cliente notificado (email + SMS)",
+      "Dashboard actualizado",
+      "Pasaporte digital público disponible"
     ],
     documentsRequired: [],
     actions: [
-      "El sistema generará tag NFC automáticamente",
-      "Verificar código QR y hash blockchain",
-      "Confirmar trazabilidad activa"
+      "Publicar certificado en portal público SICREP",
+      "Habilitar validación pública por código QR",
+      "Notificar al cliente (email + SMS)",
+      "Actualizar dashboard y estadísticas",
+      "Generar comunicado de prensa (opcional)",
+      "Avanzar a Fase 10: Seguimiento Post-Certificación"
     ]
   },
-  "publicado": {
-    title: "Publicación y Entrega",
-    description: "Certificación publicada y disponible",
-    checklist: [
-      "Certificado PDF enviado al cliente",
-      "Tag NFC activado",
-      "Pasaporte digital público disponible",
-      "Cliente notificado"
-    ],
-    documentsRequired: [],
-    actions: [
-      "Verificar que el cliente recibió el certificado",
-      "Confirmar acceso al pasaporte digital",
-      "Avanzar a monitoreo continuo"
-    ]
-  },
-  "monitoreo_continuo": {
-    title: "Monitoreo y Mantenimiento",
-    description: "Seguimiento continuo de la certificación",
+  "seguimiento": {
+    title: "Fase 10: Seguimiento Post-Certificación",
+    description: "Monitoreo continuo y alertas de renovación (12 meses)",
     checklist: [
       "Certificación activa y válida",
-      "Sin reportes de incidencias",
-      "Renovación programada"
+      "Monitoreo de vigencia activo",
+      "Sistema de alertas configurado",
+      "Sin reportes de incidencias críticas",
+      "Auditorías de seguimiento aleatorias"
     ],
     documentsRequired: [],
     actions: [
-      "Monitorear vencimiento",
-      "Alertar al cliente 30 días antes del vencimiento",
-      "Procesar renovaciones"
+      "Monitorear vigencia del certificado (12 meses)",
+      "Enviar recordatorios automáticos de renovación:",
+      "  • 90 días antes: Email recordatorio",
+      "  • 60 días antes: Email + SMS",
+      "  • 30 días antes: Email + SMS + Llamada",
+      "Realizar auditorías aleatorias de seguimiento",
+      "Verificar mantenimiento de condiciones de certificación",
+      "Si vencido sin renovación: Suspensión automática del certificado"
     ]
   }
 };
