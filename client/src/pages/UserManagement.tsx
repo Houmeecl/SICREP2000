@@ -312,14 +312,14 @@ export default function UserManagement() {
                         <div className="space-y-2">
                           <Label htmlFor="company">Empresa</Label>
                           <Select
-                            value={userForm.companyId}
-                            onValueChange={(value) => setUserForm({ ...userForm, companyId: value })}
+                            value={userForm.companyId || "none"}
+                            onValueChange={(value) => setUserForm({ ...userForm, companyId: value === "none" ? "" : value })}
                           >
                             <SelectTrigger data-testid="select-company">
                               <SelectValue placeholder="Selecciona una empresa (opcional)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Sin empresa</SelectItem>
+                              <SelectItem value="none">Sin empresa</SelectItem>
                               {companies.map((company: any) => (
                                 <SelectItem key={company.id} value={company.id}>
                                   {company.name} - {company.rut}

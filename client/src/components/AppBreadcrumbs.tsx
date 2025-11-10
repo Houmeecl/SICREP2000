@@ -17,6 +17,7 @@ interface RouteMetadata {
 export const ROUTE_METADATA: Record<string, RouteMetadata> = {
   '/dashboard': { label: 'Dashboard' },
   '/certifications': { label: 'Certificaciones', parent: '/dashboard' },
+  '/certifications/:id': { label: 'Detalle Certificación', parent: '/certifications' },
   '/cps': { label: 'Sistemas CPS', parent: '/dashboard' },
   '/providers': { label: 'Proveedores', parent: '/dashboard' },
   '/providers-directory': { label: 'Directorio Certificados', parent: '/dashboard' },
@@ -40,8 +41,25 @@ export function AppBreadcrumbs() {
     const trail: RouteMetadata[] = [];
     let currentPath = path;
 
-    while (currentPath && ROUTE_METADATA[currentPath]) {
-      const metadata = ROUTE_METADATA[currentPath];
+    while (currentPath) {
+      // Try exact match first
+      let metadata = ROUTE_METADATA[currentPath];
+      
+      // If no exact match, try to match dynamic routes (e.g., /certifications/:id)
+      if (!metadata) {
+        const matchingKey = Object.keys(ROUTE_METADATA).find(key => {
+          const pattern = key.replace(/:[^/]+/g, '[^/]+');
+          const regex = new RegExp(`^${pattern}$`);
+          return regex.test(currentPath);
+        });
+        
+        if (matchingKey) {
+          metadata = ROUTE_METADATA[matchingKey];
+        }
+      }
+      
+      if (!metadata) break;
+      
       trail.unshift({ ...metadata, parent: currentPath });
       currentPath = metadata.parent || '';
     }

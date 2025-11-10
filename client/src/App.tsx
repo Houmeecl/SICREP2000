@@ -15,6 +15,7 @@ import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Certifications from "@/pages/Certifications";
+import CertificationDetail from "@/pages/CertificationDetail";
 import CPSPage from "@/pages/CPSPage";
 import Providers from "@/pages/Providers";
 import ProvidersDirectory from "@/pages/ProvidersDirectory";
@@ -58,6 +59,11 @@ function Router() {
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/certifications/:id">
+        <ProtectedRoute>
+          <CertificationDetail />
         </ProtectedRoute>
       </Route>
       <Route path="/certifications">

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Search, Plus, FileCheck, Download, Upload, FileText, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useBackNavigation } from "@/hooks/useBackNavigation";
@@ -221,9 +222,11 @@ export default function Certifications() {
                   <div className="text-xs text-muted-foreground">puntos</div>
                 </div>
                 
-                <Button size="sm" variant="outline" data-testid={`button-view-${cert.id}`}>
-                  Ver Detalles
-                </Button>
+                <Link href={`/certifications/${cert.id}`}>
+                  <Button size="sm" variant="outline" data-testid={`button-view-${cert.id}`}>
+                    Ver Detalles
+                  </Button>
+                </Link>
               </div>
             ))}
           </div>
