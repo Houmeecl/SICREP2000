@@ -991,10 +991,14 @@ export function registerRoutes(app: Express): Server {
       const allShipments = await storage.getAllShipments();
       const nfcTag = generateNFCTagUtil(allShipments.length);
       
+      // Generate new blockchain hash for certification
+      const blockchainHash = generateBlockchainHashUtil();
+      
       // Update shipment to certified
       const updatedShipment = await storage.updateShipment(id, {
         status: 'certified' as any,
         nfcTag,
+        blockchainHash,
         certifiedBy: req.session.user?.id,
         certifiedAt: new Date(),
       });
@@ -1006,7 +1010,7 @@ export function registerRoutes(app: Express): Server {
         action: "Certificación de despacho",
         location: "Bodega",
         userName: req.session.user?.fullName || "Sistema",
-        blockchainHash: shipment.blockchainHash,
+        blockchainHash,
         metadata: JSON.stringify({
           totalWeightGr: shipment.totalWeightGr,
           recyclabilityPercent: shipment.recyclabilityPercent,
@@ -1017,7 +1021,7 @@ export function registerRoutes(app: Express): Server {
       await storage.createActivity({
         type: "Certificación",
         title: `Despacho certificado: ${shipment.code}`,
-        description: `NFC Tag: ${nfcTag}`,
+        description: `NFC Tag: ${nfcTag}, Blockchain: ${blockchainHash.substring(0, 16)}...`,
         userId: req.session.user?.id,
         relatedId: id,
         status: "success",
