@@ -15,6 +15,10 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 32995
+externalPort = 3003
+
+[[ports]]
 localPort = 41209
 externalPort = 3000
 
@@ -52,3 +56,6 @@ waitForPort = 5000
 
 [agent]
 integrations = ["javascript_database:1.0.0", "javascript_log_in_with_replit:1.0.0"]
+
+[objectStorage]
+defaultBucketID = "replit-objstore-e1ae7e62-750f-4251-a65a-a0c3269cc45d"

@@ -155,7 +155,7 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-3 justify-center">
-            <Link href="/certifications">
+            <Link href="/solicitar-certificacion">
               <Button size="lg" data-testid="button-start-certification">
                 Iniciar Certificación
                 <ArrowRight className="w-4 h-4 ml-2" />

@@ -2,10 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle, Leaf, LogIn, Search } from "lucide-react";
 import heroImage from "@assets/generated_images/Mining_trucks_with_wind_turbines_2fe45c1a.png";
 import { Link } from "wouter";
-import { useAuth } from "@/lib/auth";
 
 export default function LandingHero() {
-  const { isAuthenticated } = useAuth();
   
   return (
     <div className="relative min-h-[600px] flex items-center justify-center overflow-hidden">
@@ -38,7 +36,7 @@ export default function LandingHero() {
               Verificar Trazabilidad
             </Button>
           </Link>
-          <Link href={isAuthenticated ? "/packaging" : "/login"}>
+          <Link href="/solicitar-certificacion">
             <Button size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20" data-testid="button-start-certification">
               Iniciar Certificación
             </Button>

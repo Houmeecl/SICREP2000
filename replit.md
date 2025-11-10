@@ -5,6 +5,7 @@
 SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibility) compliance certification in Chile, targeting the mining industry and its suppliers. The system facilitates end-to-end certification for packaging materials under Law 20.920, with specialized features for providers handling less than 300kg annually. It addresses the legal requirement for accurate weight/materiality data reporting to RETC, mitigating potential fines.
 
 **Latest Updates (November 2025):**
+- ✅ **FIX: Botones "Iniciar Certificación"** - Corregidos para apuntar a formulario público `/solicitar-certificacion`
 - ✅ **NEW: Sistema de solicitud pública de certificación** - Sistema completo de onboarding para empresas sin cuenta
   - Formulario multi-paso (4 tabs: Empresa, Contacto, Documentos, Revisión)
   - Validación de RUT chileno con algoritmo estándar
