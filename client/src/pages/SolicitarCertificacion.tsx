@@ -28,19 +28,17 @@ const requestSchema = z.object({
   contactEmail: z.string().email("Email del contacto inválido"),
   contactPhone: z.string().min(8, "Teléfono del contacto inválido"),
   manualConfirmed: z.boolean().refine(val => val === true, "Debe confirmar que ha descargado el manual"),
-  documents: z.custom<FileList>().refine(
-    (files) => files && files.length > 0,
-    "Debe subir al menos un documento"
-  ).refine(
-    (files) => files && files.length <= 5,
+  documents: z.custom<FileList>().optional().refine(
+    (files) => !files || files.length <= 5,
     "Máximo 5 archivos permitidos"
   ).refine(
     (files) => {
-      if (!files) return true;
+      if (!files || files.length === 0) return true;
       return Array.from(files).every(file => file.size <= 5 * 1024 * 1024);
     },
     "Cada archivo debe pesar menos de 5MB"
-  )
+  ),
+  confirmNoDocuments: z.boolean().optional()
 });
 
 type RequestFormData = z.infer<typeof requestSchema>;
@@ -76,6 +74,9 @@ export default function SolicitarCertificacion() {
           formData.append(key, value as string);
         }
       });
+
+      // Add manualDownloaded as a boolean (backend expects this field name)
+      formData.append('manualDownloaded', data.manualConfirmed ? 'true' : 'false');
 
       if (data.documents) {
         Array.from(data.documents).forEach((file) => {
@@ -453,7 +454,7 @@ export default function SolicitarCertificacion() {
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="documents">Documentos Requeridos *</Label>
+                    <Label htmlFor="documents">Documentos Requeridos</Label>
                     <div className="text-sm text-muted-foreground mb-2">
                       <p>Adjunte los siguientes documentos (máximo 5 archivos, 5MB cada uno):</p>
                       <ul className="list-disc list-inside ml-2 mt-1 space-y-1">
