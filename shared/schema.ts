@@ -81,6 +81,56 @@ export const certificationRequestStatusEnum = pgEnum("certification_request_stat
   "rejected"
 ]);
 
+export const certificationTypeEnum = pgEnum("certification_type", [
+  "basica",
+  "con_embalajes",
+  "solo_embalajes"
+]);
+
+export const paymentMethodEnum = pgEnum("payment_method", [
+  "transferencia",
+  "webpay",
+  "orden_compra"
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "pendiente",
+  "pagado",
+  "rechazado",
+  "reembolsado"
+]);
+
+export const authorizationDecisionEnum = pgEnum("authorization_decision", [
+  "aprobado",
+  "rechazado",
+  "pendiente",
+  "condicional"
+]);
+
+export const nfcTagStatusEnum = pgEnum("nfc_tag_status", [
+  "disponible",
+  "en_uso",
+  "completado",
+  "inactivo"
+]);
+
+export const packagingCertStatusEnum = pgEnum("packaging_cert_status", [
+  "borrador",
+  "pendiente_pago",
+  "pagado",
+  "certificado",
+  "activo",
+  "completado"
+]);
+
+export const visitSlotStatusEnum = pgEnum("visit_slot_status", [
+  "disponible",
+  "reservado",
+  "confirmado",
+  "completado",
+  "cancelado"
+]);
+
 // Companies table
 export const companies = pgTable("companies", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -436,7 +486,8 @@ export const loginConfig = pgTable("login_config", {
 // Certification Requests table - Public requests for new certifications
 export const certificationRequests = pgTable("certification_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  
+  code: text("code").notNull().unique(), // CERT-CL-YYYY-NNNNNN
+
   // Company data
   companyName: text("company_name").notNull(),
   companyRut: text("company_rut").notNull(),
@@ -444,29 +495,39 @@ export const certificationRequests = pgTable("certification_requests", {
   companyPhone: text("company_phone"),
   companyAddress: text("company_address"),
   industry: text("industry"),
-  
+
   // Contact person
   contactName: text("contact_name").notNull(),
   contactEmail: text("contact_email").notNull(),
   contactPhone: text("contact_phone"),
-  
+
+  // Certification type
+  certificationType: certificationTypeEnum("certification_type").notNull().default("basica"),
+
+  // Payment info
+  paymentMethod: paymentMethodEnum("payment_method").notNull().default("transferencia"),
+  paymentAmount: decimal("payment_amount", { precision: 10, scale: 2 }).notNull(),
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default("pendiente"),
+  paymentProof: text("payment_proof"), // Base64 encoded image of payment proof
+
   // Manual confirmation
   manualDownloaded: boolean("manual_downloaded").notNull().default(false),
-  
+
   // Documents status
   documentsProvided: boolean("documents_provided").notNull().default(false),
-  
+
   // Request status
   status: certificationRequestStatusEnum("status").notNull().default("pending"),
   reviewNotes: text("review_notes"),
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
-  
+
   // Created entities (populated on approval)
   createdUserId: varchar("created_user_id").references(() => users.id),
   createdProviderId: varchar("created_provider_id").references(() => providers.id),
   createdCertificationId: varchar("created_certification_id").references(() => certifications.id),
-  
+  generatedPassword: text("generated_password"), // Temporary storage until email is sent
+
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -481,6 +542,94 @@ export const requestDocuments = pgTable("request_documents", {
   fileData: text("file_data").notNull(), // Base64 encoded
   category: text("category").default("general"), // "rut", "payment", "letter", "other"
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Workflow Authorizations table - Role-based approvals per phase
+export const workflowAuthorizations = pgTable("workflow_authorizations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  certificationId: varchar("certification_id").notNull().references(() => certifications.id),
+  phase: text("phase").notNull(),
+  requiredRole: userRoleEnum("required_role").notNull(),
+  authorizedBy: varchar("authorized_by").references(() => users.id),
+  decision: authorizationDecisionEnum("decision").notNull().default("pendiente"),
+  comments: text("comments"),
+  votingResults: text("voting_results"), // JSON for committee voting
+  authorizedAt: timestamp("authorized_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Workflow Conditions table - Conditional approval action items
+export const workflowConditions = pgTable("workflow_conditions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  authorizationId: varchar("authorization_id").notNull().references(() => workflowAuthorizations.id),
+  conditionText: text("condition_text").notNull(),
+  completed: boolean("completed").notNull().default(false),
+  completedBy: varchar("completed_by").references(() => users.id),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// NFC Packages table - 30 NFC tag packages for providers
+export const nfcPackages = pgTable("nfc_packages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  certificationId: varchar("certification_id").references(() => certifications.id),
+  totalAssigned: integer("total_assigned").notNull().default(30),
+  inUse: integer("in_use").notNull().default(0),
+  available: integer("available").notNull().default(30),
+  historicalUsage: integer("historical_usage").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// NFC Tag Assignments table - Track individual tag assignments from packages
+export const nfcTagAssignments = pgTable("nfc_tag_assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nfcTagId: varchar("nfc_tag_id").notNull().references(() => nfcTags.id),
+  packageId: varchar("package_id").notNull().references(() => nfcPackages.id),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  shipmentId: varchar("shipment_id").references(() => shipments.id),
+  status: nfcTagStatusEnum("status").notNull().default("disponible"),
+  assignedAt: timestamp("assigned_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Packaging Certifications table - Certification and payment control for packaging
+export const packagingCertifications = pgTable("packaging_certifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(),
+  providerId: varchar("provider_id").notNull().references(() => providers.id),
+  shipmentId: varchar("shipment_id").references(() => shipments.id),
+  nfcTagUsed: text("nfc_tag_used"),
+  status: packagingCertStatusEnum("status").notNull().default("borrador"),
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default("pendiente"),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  includedInPackage: boolean("included_in_package").notNull().default(false), // True if part of base certification
+  paidAt: timestamp("paid_at"),
+  certifiedBy: varchar("certified_by").references(() => users.id),
+  certifiedAt: timestamp("certified_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Field Visit Slots table - Calendar system for field audits
+export const fieldVisitSlots = pgTable("field_visit_slots", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  auditorId: varchar("auditor_id").notNull().references(() => users.id),
+  date: timestamp("date").notNull(),
+  startTime: text("start_time").notNull(), // "09:00"
+  endTime: text("end_time").notNull(), // "13:00"
+  region: text("region"),
+  city: text("city"),
+  address: text("address"),
+  status: visitSlotStatusEnum("status").notNull().default("disponible"),
+  certificationId: varchar("certification_id").references(() => certifications.id),
+  reservedBy: varchar("reserved_by").references(() => users.id),
+  reservedAt: timestamp("reserved_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const insertCertificationDocumentSchema = createInsertSchema(certificationDocuments).omit({
@@ -513,6 +662,46 @@ export const insertCertificationRequestSchema = createInsertSchema(certification
 export const insertRequestDocumentSchema = createInsertSchema(requestDocuments).omit({
   id: true,
   createdAt: true,
+});
+
+export const insertWorkflowAuthorizationSchema = createInsertSchema(workflowAuthorizations).omit({
+  id: true,
+  createdAt: true,
+  authorizedAt: true,
+});
+
+export const insertWorkflowConditionSchema = createInsertSchema(workflowConditions).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertNFCPackageSchema = createInsertSchema(nfcPackages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertNFCTagAssignmentSchema = createInsertSchema(nfcTagAssignments).omit({
+  id: true,
+  createdAt: true,
+  assignedAt: true,
+  completedAt: true,
+});
+
+export const insertPackagingCertificationSchema = createInsertSchema(packagingCertifications).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  paidAt: true,
+  certifiedAt: true,
+});
+
+export const insertFieldVisitSlotSchema = createInsertSchema(fieldVisitSlots).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reservedAt: true,
 });
 
 // Types
@@ -572,3 +761,21 @@ export type CertificationRequest = typeof certificationRequests.$inferSelect;
 
 export type InsertRequestDocument = z.infer<typeof insertRequestDocumentSchema>;
 export type RequestDocument = typeof requestDocuments.$inferSelect;
+
+export type InsertWorkflowAuthorization = z.infer<typeof insertWorkflowAuthorizationSchema>;
+export type WorkflowAuthorization = typeof workflowAuthorizations.$inferSelect;
+
+export type InsertWorkflowCondition = z.infer<typeof insertWorkflowConditionSchema>;
+export type WorkflowCondition = typeof workflowConditions.$inferSelect;
+
+export type InsertNFCPackage = z.infer<typeof insertNFCPackageSchema>;
+export type NFCPackage = typeof nfcPackages.$inferSelect;
+
+export type InsertNFCTagAssignment = z.infer<typeof insertNFCTagAssignmentSchema>;
+export type NFCTagAssignment = typeof nfcTagAssignments.$inferSelect;
+
+export type InsertPackagingCertification = z.infer<typeof insertPackagingCertificationSchema>;
+export type PackagingCertification = typeof packagingCertifications.$inferSelect;
+
+export type InsertFieldVisitSlot = z.infer<typeof insertFieldVisitSlotSchema>;
+export type FieldVisitSlot = typeof fieldVisitSlots.$inferSelect;

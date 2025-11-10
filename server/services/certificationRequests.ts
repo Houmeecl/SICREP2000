@@ -28,8 +28,40 @@ export class CertificationRequestService {
       throw new Error("RUT inválido");
     }
 
-    // Create request
-    const request = await this.storage.createCertificationRequest(requestData);
+    // Generate certification code: CERT-CL-YYYY-NNNNNN
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const code = `CERT-CL-${year}-${randomNum}`;
+
+    // Calculate payment amount based on certification type (in CLP, assuming 1 UF = 40000 CLP)
+    // Note: Sello SICREP base = 15 UF + IVA (19%)
+    // Monthly platform usage = 5 UF/month (plataforma, certificado REP, trazabilidad, informes)
+    const UF_VALUE = 40000; // Approximate value, should be updated periodically
+    const IVA = 0.19; // 19% VAT
+    let paymentAmount: string;
+    switch (requestData.certificationType) {
+      case 'basica':
+        // 15 UF base + IVA
+        paymentAmount = (15 * UF_VALUE * (1 + IVA)).toFixed(0); // 15 UF + 19% = ~714,000 CLP
+        break;
+      case 'con_embalajes':
+        // 15 UF base + 5 UF embalajes + IVA
+        paymentAmount = (20 * UF_VALUE * (1 + IVA)).toFixed(0); // 20 UF + 19% = ~952,000 CLP
+        break;
+      case 'solo_embalajes':
+        // 5 UF solo embalajes + IVA
+        paymentAmount = (5 * UF_VALUE * (1 + IVA)).toFixed(0); // 5 UF + 19% = ~238,000 CLP
+        break;
+      default:
+        paymentAmount = (15 * UF_VALUE * (1 + IVA)).toFixed(0);
+    }
+
+    // Create request with generated code and calculated amount
+    const request = await this.storage.createCertificationRequest({
+      ...requestData,
+      code,
+      paymentAmount,
+    });
 
     // Create documents
     if (documents.length > 0) {
@@ -105,7 +137,19 @@ export class CertificationRequestService {
           assignedTo: reviewerId,
         }).returning();
 
-        // 7. Create workflow history entry
+        // 7. Create NFC package if certification includes packaging
+        if (request.certificationType === "con_embalajes" || request.certificationType === "solo_embalajes") {
+          await tx.insert(await import("@shared/schema").then(m => m.nfcPackages)).values({
+            providerId: provider.id,
+            certificationId: certification.id,
+            totalAssigned: 30,
+            inUse: 0,
+            available: 30,
+            historicalUsage: 0,
+          });
+        }
+
+        // 8. Create workflow history entry
         await tx.insert(await import("@shared/schema").then(m => m.workflowHistory)).values({
           certificationId: certification.id,
           phase: "solicitud_inicial",
@@ -114,7 +158,7 @@ export class CertificationRequestService {
           notes: reviewNotes || "Solicitud aprobada desde panel de administración",
         });
 
-        // 8. Create activity log
+        // 9. Create activity log
         await tx.insert(await import("@shared/schema").then(m => m.activityLog)).values({
           type: "certification_request_approved",
           title: "Solicitud de Certificación Aprobada",

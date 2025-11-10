@@ -4,6 +4,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["run"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -12,7 +13,6 @@ run = ["npm", "run", "start"]
 
 [[ports]]
 localPort = 5000
-externalPort = 80
 
 [[ports]]
 localPort = 41209
@@ -49,7 +49,10 @@ task = "workflow.run"
 args = "Start application"
 
 [agent]
-integrations = ["javascript_database:1.0.0", "javascript_log_in_with_replit:1.0.0"]
+integrations = [
+  "javascript_database:1.0.0",
+  "javascript_log_              in_with_replit:1.0.0",
+]
 
 [objectStorage]
 defaultBucketID = "replit-objstore-e1ae7e62-750f-4251-a65a-a0c3269cc45d"

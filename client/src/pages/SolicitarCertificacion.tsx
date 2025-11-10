@@ -27,6 +27,13 @@ const requestSchema = z.object({
   contactName: z.string().min(3, "Nombre del contacto requerido"),
   contactEmail: z.string().email("Email del contacto inválido"),
   contactPhone: z.string().min(8, "Teléfono del contacto inválido"),
+  certificationType: z.enum(["basica", "con_embalajes", "solo_embalajes"], {
+    required_error: "Seleccione un tipo de certificación"
+  }),
+  paymentMethod: z.enum(["transferencia", "webpay", "orden_compra"], {
+    required_error: "Seleccione un método de pago"
+  }),
+  paymentProof: z.custom<FileList>().optional(),
   manualConfirmed: z.boolean().refine(val => val === true, "Debe confirmar que ha descargado el manual"),
   documents: z.custom<FileList>().optional().refine(
     (files) => !files || files.length <= 5,
@@ -61,16 +68,28 @@ export default function SolicitarCertificacion() {
       contactName: "",
       contactEmail: "",
       contactPhone: "",
+      certificationType: "basica",
+      paymentMethod: "transferencia",
       manualConfirmed: false,
     }
   });
 
+  // Calculate payment amount based on certification type
+  // Note: Sello SICREP = 15 UF + IVA, plus 5 UF/month platform usage
+  const certificationType = form.watch("certificationType");
+  const paymentDetails = certificationType === "basica"
+    ? { uf: "15 UF", clp: "~$714,000 CLP", desc: "Sello SICREP + IVA" }
+    : certificationType === "con_embalajes"
+    ? { uf: "20 UF", clp: "~$952,000 CLP", desc: "Sello SICREP + 30 NFC tags + IVA" }
+    : { uf: "5 UF", clp: "~$238,000 CLP", desc: "Solo embalajes (30 NFC) + IVA" };
+  const monthlyFee = "5 UF/mes (~$200,000 CLP/mes)";
+
   const submitMutation = useMutation({
     mutationFn: async (data: RequestFormData) => {
       const formData = new FormData();
-      
+
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== 'documents' && key !== 'manualConfirmed') {
+        if (key !== 'documents' && key !== 'paymentProof' && key !== 'manualConfirmed') {
           formData.append(key, value as string);
         }
       });
@@ -82,6 +101,10 @@ export default function SolicitarCertificacion() {
         Array.from(data.documents).forEach((file) => {
           formData.append('documents', file);
         });
+      }
+
+      if (data.paymentProof && data.paymentProof.length > 0) {
+        formData.append('paymentProof', data.paymentProof[0]);
       }
 
       const response = await fetch('/api/public/certification-requests', {
@@ -120,6 +143,7 @@ export default function SolicitarCertificacion() {
     const currentFields = {
       empresa: ['companyName', 'companyRut', 'companyEmail', 'companyPhone', 'companyAddress', 'industry'],
       contacto: ['contactName', 'contactEmail', 'contactPhone'],
+      certificacion: ['certificationType', 'paymentMethod'],
       documentos: ['manualConfirmed', 'documents'],
     };
 
@@ -203,7 +227,7 @@ export default function SolicitarCertificacion() {
 
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="empresa" data-testid="tab-empresa">
                 <Building2 className="w-4 h-4 mr-2" />
                 Empresa
@@ -211,6 +235,10 @@ export default function SolicitarCertificacion() {
               <TabsTrigger value="contacto" data-testid="tab-contacto">
                 <User className="w-4 h-4 mr-2" />
                 Contacto
+              </TabsTrigger>
+              <TabsTrigger value="certificacion" data-testid="tab-certificacion">
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Certificación
               </TabsTrigger>
               <TabsTrigger value="documentos" data-testid="tab-documentos">
                 <FileText className="w-4 h-4 mr-2" />
@@ -385,16 +413,172 @@ export default function SolicitarCertificacion() {
                   </div>
 
                   <div className="flex justify-between pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       onClick={() => setCurrentTab("empresa")}
                       data-testid="button-back-empresa"
                     >
                       Anterior
                     </Button>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
+                      onClick={() => handleNextTab("certificacion")}
+                      data-testid="button-next-certificacion"
+                    >
+                      Siguiente: Certificación
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="certificacion">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tipo de Certificación y Pago</CardTitle>
+                  <CardDescription>
+                    Seleccione el tipo de certificación que necesita y el método de pago
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <Label>Tipo de Certificación *</Label>
+                    <div className="grid gap-4">
+                      <div
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                          form.watch("certificationType") === "basica"
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => form.setValue("certificationType", "basica")}
+                        data-testid="cert-type-basica"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold mb-1">Certificación Básica (Sello SICREP)</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Sello SICREP + CPS + Certificación REP + Trazabilidad NFC
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              + 5 UF/mes uso plataforma (informes, trazabilidad)
+                            </p>
+                          </div>
+                          <div className="text-right ml-4">
+                            <div className="text-2xl font-bold">15 UF + IVA</div>
+                            <div className="text-xs text-muted-foreground">~$714,000 CLP</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                          form.watch("certificationType") === "con_embalajes"
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => form.setValue("certificationType", "con_embalajes")}
+                        data-testid="cert-type-con-embalajes"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold mb-1">Certificación con Embalajes</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Todo lo anterior + paquete de 30 NFC tags reutilizables para embalajes
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              + 5 UF/mes uso plataforma
+                            </p>
+                          </div>
+                          <div className="text-right ml-4">
+                            <div className="text-2xl font-bold">20 UF + IVA</div>
+                            <div className="text-xs text-muted-foreground">~$952,000 CLP</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`border-2 rounded-lg p-4 cursor-pointer transition-colors ${
+                          form.watch("certificationType") === "solo_embalajes"
+                            ? "border-primary bg-primary/5"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => form.setValue("certificationType", "solo_embalajes")}
+                        data-testid="cert-type-solo-embalajes"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold mb-1">Solo Embalajes (Add-on)</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Para proveedores ya certificados: solo paquete de 30 NFC tags
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Sin costo mensual adicional
+                            </p>
+                          </div>
+                          <div className="text-right ml-4">
+                            <div className="text-2xl font-bold">5 UF + IVA</div>
+                            <div className="text-xs text-muted-foreground">~$238,000 CLP</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {form.formState.errors.certificationType && (
+                      <p className="text-sm text-destructive">{form.formState.errors.certificationType.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label htmlFor="paymentMethod">Método de Pago *</Label>
+                    <Select
+                      value={form.watch("paymentMethod")}
+                      onValueChange={(value) => form.setValue("paymentMethod", value as any)}
+                    >
+                      <SelectTrigger id="paymentMethod" data-testid="select-payment-method">
+                        <SelectValue placeholder="Seleccione método de pago" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="transferencia">Transferencia Bancaria</SelectItem>
+                        <SelectItem value="webpay">WebPay (Tarjeta de Crédito/Débito)</SelectItem>
+                        <SelectItem value="orden_compra">Orden de Compra</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {form.formState.errors.paymentMethod && (
+                      <p className="text-sm text-destructive">{form.formState.errors.paymentMethod.message}</p>
+                    )}
+                  </div>
+
+                  {form.watch("paymentMethod") === "transferencia" && (
+                    <Alert>
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        <p className="font-semibold mb-2">Datos para Transferencia:</p>
+                        <div className="text-sm space-y-1">
+                          <p><strong>Banco:</strong> Banco de Chile</p>
+                          <p><strong>Cuenta Corriente:</strong> 12345678</p>
+                          <p><strong>RUT:</strong> 76.XXX.XXX-X</p>
+                          <p><strong>Titular:</strong> SICREP SpA</p>
+                          <p><strong>Email:</strong> pagos@sicrep.cl</p>
+                          <p className="mt-2">Pago inicial: <strong>{paymentDetails.uf} + IVA ({paymentDetails.clp})</strong></p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {certificationType !== "solo_embalajes" && `+ Pago mensual: ${monthlyFee}`}
+                          </p>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="flex justify-between pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentTab("contacto")}
+                      data-testid="button-back-contacto"
+                    >
+                      Anterior
+                    </Button>
+                    <Button
+                      type="button"
                       onClick={() => handleNextTab("documentos")}
                       data-testid="button-next-documentos"
                     >
@@ -485,16 +669,16 @@ export default function SolicitarCertificacion() {
                   </div>
 
                   <div className="flex justify-between pt-4">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setCurrentTab("contacto")}
-                      data-testid="button-back-contacto"
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentTab("certificacion")}
+                      data-testid="button-back-certificacion"
                     >
                       Anterior
                     </Button>
-                    <Button 
-                      type="button" 
+                    <Button
+                      type="button"
                       onClick={() => handleNextTab("revision")}
                       data-testid="button-next-revision"
                     >
@@ -541,6 +725,26 @@ export default function SolicitarCertificacion() {
                       <dd data-testid="review-contact-email">{form.watch("contactEmail")}</dd>
                       <dt className="text-muted-foreground">Teléfono:</dt>
                       <dd data-testid="review-contact-phone">{form.watch("contactPhone")}</dd>
+                    </dl>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-3">Certificación y Pago</h3>
+                    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                      <dt className="text-muted-foreground">Tipo de Certificación:</dt>
+                      <dd data-testid="review-cert-type">
+                        {form.watch("certificationType") === "basica" && "Certificación Básica (15 UF)"}
+                        {form.watch("certificationType") === "con_embalajes" && "Certificación con Embalajes (20 UF)"}
+                        {form.watch("certificationType") === "solo_embalajes" && "Solo Embalajes (10 UF)"}
+                      </dd>
+                      <dt className="text-muted-foreground">Método de Pago:</dt>
+                      <dd data-testid="review-payment-method">
+                        {form.watch("paymentMethod") === "transferencia" && "Transferencia Bancaria"}
+                        {form.watch("paymentMethod") === "webpay" && "WebPay"}
+                        {form.watch("paymentMethod") === "orden_compra" && "Orden de Compra"}
+                      </dd>
+                      <dt className="text-muted-foreground">Monto a Pagar:</dt>
+                      <dd data-testid="review-amount" className="font-semibold">{paymentAmount}</dd>
                     </dl>
                   </div>
 
