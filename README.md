@@ -355,9 +355,45 @@ npm run seed
 
 ---
 
+## 🚀 Roadmap y Mejoras
+
+Ver [IMPROVEMENTS.md](IMPROVEMENTS.md) para el roadmap completo de mejoras identificadas basadas en análisis de documentos técnicos.
+
+### Próximas Mejoras Prioritarias
+
+**Fase 2 - En Planificación** (2 semanas)
+- [ ] Sistema de SLA por fase con alertas
+- [ ] Notificaciones en tiempo real
+- [ ] Dashboard con alertas de cumplimiento
+- [ ] Emails automáticos
+
+**Fase 3 - Planificado** (2 semanas)
+- [ ] Niveles de embalaje (Primario/Secundario/Terciario)
+- [ ] Modo offline-first para operaciones en terreno
+- [ ] Geolocalización en escaneos NFC
+- [ ] NDEF tags mejorados
+
+---
+
 ## 📝 Changelog
 
-### v1.0.0 (2025-01-10)
+### v1.1.0 (2025-01-10) - Documentación y Análisis
+
+**Mejoras de Documentación**
+- ✅ IMPROVEMENTS.md con 7 mejoras críticas identificadas
+- ✅ Configuración de SLA por fase (shared/workflow-config.ts)
+- ✅ Roadmap de implementación en 6 fases
+- ✅ Análisis de documentos técnicos completo
+
+**Identificado para Implementación**
+- Sistema de notificaciones completo
+- Jerarquía de roles mejorada
+- Niveles de embalaje REP
+- Trazabilidad NFC avanzada
+- Dashboard con KPIs ampliados
+- Búsqueda avanzada con filtros
+
+### v1.0.0 (2025-01-10) - Release Inicial
 
 **Características Iniciales**
 - ✅ Sistema completo de autenticación
@@ -372,7 +408,7 @@ npm run seed
 - ✅ Generación de PDFs oficiales
 - ✅ Validación de RUT chileno
 - ✅ Sistema de paneles modulares
-- ✅ Documentación completa
+- ✅ Documentación completa (DEPLOYMENT, SECURITY, MODULES)
 
 ---
 
