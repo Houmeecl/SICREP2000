@@ -5,23 +5,32 @@
 SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibility) compliance certification in Chile, targeting the mining industry and its suppliers. The system facilitates end-to-end certification for packaging materials under Law 20.920, with specialized features for providers handling less than 300kg annually. It addresses the legal requirement for accurate weight/materiality data reporting to RETC, mitigating potential fines.
 
 **Latest Updates (November 2025):**
+- ✅ **NEW: Sistema de solicitud pública de certificación** - Sistema completo de onboarding para empresas sin cuenta
+  - Formulario multi-paso (4 tabs: Empresa, Contacto, Documentos, Revisión)
+  - Validación de RUT chileno con algoritmo estándar
+  - Carga opcional de documentos (PDF/JPG/PNG, máx 5 archivos, 5MB c/u)
+  - Storage de documentos en base64 en tabla `requestDocuments`
+  - Página pública sin autenticación en `/solicitar-certificacion`
+- ✅ **NEW: Panel admin de solicitudes** - Dashboard completo en `/admin/solicitudes`
+  - Listado de solicitudes con filtros por estado (pending, approved, rejected)
+  - Vista de detalles con toda la información de la empresa
+  - Botones de aprobación/rechazo con confirmación
+  - Aprobación automática crea: provider + user + certification (transaccional)
+  - Generación de credenciales temporales con bcrypt
+  - Email stub service (console.log, TODO: SendGrid/Resend integration)
+- ✅ **NEW: Tablas de DB** - `certificationRequests` y `requestDocuments` con field `documentsProvided`
 - ✅ Fully functional document upload system with base64 storage in PostgreSQL
-- ✅ Real file upload, storage, and download capabilities for certification documents
 - ✅ CSV export functionality for reports and certifications
 - ✅ Complete provider-based data filtering (demo user: sicrep@sicrep.cl with RUT 76.543.210-K)
 - ✅ Professional PDF report generation with SICREP branding
 - ✅ Manual profesional con borradores descargables para empresas, asociaciones y auditorías
 - ✅ Landing de trazabilidad mejorada con timeline visual de eventos NFC y workflow
 - ✅ Sistema de trazabilidad NFC completo con 3 nuevas tablas (productCatalog, productionBatches, nfcValidations)
-- ✅ Endpoints API para productos, lotes y validaciones NFC con seguridad por rol
 - ✅ Manual con arquitectura visual - Diagrama SVG de 5 capas, 9 módulos, 3 flujos de trabajo, 15 roles
 - ✅ Login con imagen de minería y energía renovable - Split screen profesional
-- ✅ Expansión a sector energía - Plataforma ahora cubre minería y energía
 - ✅ Calculadora de Cumplimiento REP interactiva - Slider dinámico con cálculo de obligaciones y multas
 - ✅ Demo Trazabilidad NFC/QR - Simulador completo de generación y validación de códigos QR
-- ✅ Sistema de navegación mejorado - Sidebar con categorías, breadcrumbs y botones "Volver"
-- ✅ **NEW: Página de detalle de certificaciones** - Vista completa con timeline de workflow, documentos adjuntos, y botón de avance de fase (solo admin/evaluador/auditor)
-- ✅ **FIX: SelectItem en UserManagement** - Corregido error de valor vacío en campo empresa opcional
+- ✅ Página de detalle de certificaciones con timeline de workflow y avance de fase
 
 SICREP transforms compliance into a competitive advantage by offering:
 - Individual packaging certification by type and weight.

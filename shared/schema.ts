@@ -477,6 +477,9 @@ export const certificationRequests = pgTable("certification_requests", {
   // Manual confirmation
   manualDownloaded: boolean("manual_downloaded").notNull().default(false),
   
+  // Documents status
+  documentsProvided: boolean("documents_provided").notNull().default(false),
+  
   // Request status
   status: certificationRequestStatusEnum("status").notNull().default("pending"),
   reviewNotes: text("review_notes"),
