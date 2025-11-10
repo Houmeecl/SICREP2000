@@ -98,6 +98,13 @@ export const validationTypeEnum = pgEnum("validation_type", [
   "quality_check"
 ]);
 
+export const certificationRequestStatusEnum = pgEnum("certification_request_status", [
+  "pending",
+  "reviewing",
+  "approved",
+  "rejected"
+]);
+
 // Companies table
 export const companies = pgTable("companies", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -450,6 +457,53 @@ export const loginConfig = pgTable("login_config", {
   updatedBy: varchar("updated_by"),
 });
 
+// Certification Requests table - Public requests for new certifications
+export const certificationRequests = pgTable("certification_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Company data
+  companyName: text("company_name").notNull(),
+  companyRut: text("company_rut").notNull(),
+  companyEmail: text("company_email").notNull(),
+  companyPhone: text("company_phone"),
+  companyAddress: text("company_address"),
+  industry: text("industry"),
+  
+  // Contact person
+  contactName: text("contact_name").notNull(),
+  contactEmail: text("contact_email").notNull(),
+  contactPhone: text("contact_phone"),
+  
+  // Manual confirmation
+  manualDownloaded: boolean("manual_downloaded").notNull().default(false),
+  
+  // Request status
+  status: certificationRequestStatusEnum("status").notNull().default("pending"),
+  reviewNotes: text("review_notes"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  
+  // Created entities (populated on approval)
+  createdUserId: varchar("created_user_id").references(() => users.id),
+  createdProviderId: varchar("created_provider_id").references(() => providers.id),
+  createdCertificationId: varchar("created_certification_id").references(() => certifications.id),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Request Documents table - Documents attached to certification requests
+export const requestDocuments = pgTable("request_documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestId: varchar("request_id").notNull().references(() => certificationRequests.id),
+  fileName: text("file_name").notNull(),
+  fileSize: integer("file_size").notNull(),
+  fileType: text("file_type").notNull(),
+  fileData: text("file_data").notNull(), // Base64 encoded
+  category: text("category").default("general"), // "rut", "payment", "letter", "other"
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertCertificationDocumentSchema = createInsertSchema(certificationDocuments).omit({
   id: true,
   createdAt: true,
@@ -458,6 +512,28 @@ export const insertCertificationDocumentSchema = createInsertSchema(certificatio
 export const insertLoginConfigSchema = createInsertSchema(loginConfig).omit({
   id: true,
   updatedAt: true,
+});
+
+export const insertCertificationRequestSchema = createInsertSchema(certificationRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  reviewNotes: true,
+  createdUserId: true,
+  createdProviderId: true,
+  createdCertificationId: true,
+}).extend({
+  companyEmail: z.string().email("Email inválido"),
+  contactEmail: z.string().email("Email de contacto inválido"),
+  companyRut: z.string().min(1, "RUT requerido"),
+  manualDownloaded: z.boolean().refine(val => val === true, "Debe descargar y revisar el manual de evaluación"),
+});
+
+export const insertRequestDocumentSchema = createInsertSchema(requestDocuments).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Types
@@ -511,3 +587,9 @@ export type CertificationDocument = typeof certificationDocuments.$inferSelect;
 
 export type InsertLoginConfig = z.infer<typeof insertLoginConfigSchema>;
 export type LoginConfig = typeof loginConfig.$inferSelect;
+
+export type InsertCertificationRequest = z.infer<typeof insertCertificationRequestSchema>;
+export type CertificationRequest = typeof certificationRequests.$inferSelect;
+
+export type InsertRequestDocument = z.infer<typeof insertRequestDocumentSchema>;
+export type RequestDocument = typeof requestDocuments.$inferSelect;
