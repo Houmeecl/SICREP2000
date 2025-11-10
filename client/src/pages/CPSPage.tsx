@@ -2,11 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Package2, Recycle } from "lucide-react";
+import { Search, Package2, Recycle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useBackNavigation } from "@/hooks/useBackNavigation";
 
 export default function CPSPage() {
+  const { goBack } = useBackNavigation();
   const [searchTerm, setSearchTerm] = useState("");
   
   const { data: cpsItems = [] } = useQuery<any[]>({
@@ -21,11 +23,17 @@ export default function CPSPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Catálogo CPS</h1>
-        <p className="text-muted-foreground">
-          Certificados de Producto Sustentable para envases y embalajes
-        </p>
+      <div className="flex items-center gap-4">
+        <Button onClick={() => goBack()} variant="ghost" size="sm" data-testid="button-back-cps">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Catálogo CPS</h1>
+          <p className="text-muted-foreground">
+            Certificados de Producto Sustentable para envases y embalajes
+          </p>
+        </div>
       </div>
       
       <Card>

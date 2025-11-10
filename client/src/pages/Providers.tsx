@@ -1,10 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { AlertCircle, TrendingUp, Building2 } from "lucide-react";
+import { AlertCircle, TrendingUp, Building2, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useBackNavigation } from "@/hooks/useBackNavigation";
 
 export default function Providers() {
+  const { goBack } = useBackNavigation();
   const { data: providers = [] } = useQuery<any[]>({
     queryKey: ["/api/providers"],
   });
@@ -33,11 +36,17 @@ export default function Providers() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Proveedores</h1>
-        <p className="text-muted-foreground">
-          Gestión de capacidad y cumplimiento de proveedores certificados
-        </p>
+      <div className="flex items-center gap-4">
+        <Button onClick={() => goBack()} variant="ghost" size="sm" data-testid="button-back-providers">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Proveedores</h1>
+          <p className="text-muted-foreground">
+            Gestión de capacidad y cumplimiento de proveedores certificados
+          </p>
+        </div>
       </div>
       
       <Card>

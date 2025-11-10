@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Plus, FileCheck, Download, Upload, FileText } from "lucide-react";
+import { Search, Plus, FileCheck, Download, Upload, FileText, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useBackNavigation } from "@/hooks/useBackNavigation";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +20,7 @@ import {
 
 export default function Certifications() {
   const { toast } = useToast();
+  const { goBack } = useBackNavigation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showNewCertDialog, setShowNewCertDialog] = useState(false);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
@@ -148,9 +150,15 @@ export default function Certifications() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Certificaciones REP</h1>
-          <p className="text-muted-foreground">Gestión completa de certificados bajo Ley 20.920</p>
+        <div className="flex items-center gap-4">
+          <Button onClick={() => goBack()} variant="ghost" size="sm" data-testid="button-back-certifications">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Volver
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Certificaciones REP</h1>
+            <p className="text-muted-foreground">Gestión completa de certificados bajo Ley 20.920</p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setShowUploadDialog(true)} variant="outline" data-testid="button-upload-docs">
