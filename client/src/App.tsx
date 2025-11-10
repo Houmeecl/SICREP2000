@@ -28,6 +28,7 @@ import PackagingCertification from "@/pages/PackagingCertification";
 import ShipmentsList from "@/pages/ShipmentsList";
 import ValidateQR from "@/pages/ValidateQR";
 import ValidateNFC from "@/pages/ValidateNFC";
+import DigitalPassport from "@/pages/DigitalPassport";
 import LoginSettings from "@/pages/LoginSettings";
 import Reports from "@/pages/Reports";
 import Manual from "@/pages/Manual";
@@ -223,6 +224,7 @@ function Router() {
       
       <Route path="/validate/:qrCode" component={ValidateQR} />
       <Route path="/validate-nfc" component={ValidateNFC} />
+      <Route path="/pasaporte-digital/:qrCode" component={DigitalPassport} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -230,7 +232,7 @@ function Router() {
 
 export default function App() {
   const [location] = useLocation();
-  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location === "/solicitar-certificacion" || location === "/auto-evaluacion" || location === "/procedimientos" || location.startsWith("/validate/") || location === "/validate-nfc";
+  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location === "/solicitar-certificacion" || location === "/auto-evaluacion" || location === "/procedimientos" || location.startsWith("/validate/") || location === "/validate-nfc" || location.startsWith("/pasaporte-digital/");
   
   const style = {
     "--sidebar-width": "16rem",
