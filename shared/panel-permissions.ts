@@ -21,17 +21,21 @@ export type PanelId =
   | 'validate-qr'
   | 'validate-nfc';
 
+export type PanelCategory = 'inicio' | 'certificacion' | 'cumplimiento' | 'administracion';
+
 export interface PanelConfig {
   id: PanelId;
   name: string;
   path: string;
   icon: string;
   description: string;
+  category: PanelCategory;
   isAdmin?: boolean;
 }
 
 /**
  * Todos los paneles disponibles en el sistema
+ * Organizados por categorías para mejor navegación
  */
 export const AVAILABLE_PANELS: PanelConfig[] = [
   {
@@ -40,48 +44,7 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/dashboard',
     icon: 'LayoutDashboard',
     description: 'Panel principal con métricas y estadísticas',
-  },
-  {
-    id: 'certifications',
-    name: 'Certificaciones',
-    path: '/certifications',
-    icon: 'Award',
-    description: 'Gestión de certificaciones REP',
-  },
-  {
-    id: 'cps',
-    name: 'Sistemas CPS',
-    path: '/cps',
-    icon: 'Package',
-    description: 'Certificación de Productos y Servicios',
-  },
-  {
-    id: 'providers',
-    name: 'Proveedores',
-    path: '/providers',
-    icon: 'Building2',
-    description: 'Gestión de proveedores',
-  },
-  {
-    id: 'providers-directory',
-    name: 'Directorio Certificados',
-    path: '/providers-directory',
-    icon: 'BookOpen',
-    description: 'Directorio de proveedores certificados',
-  },
-  {
-    id: 'traceability',
-    name: 'Trazabilidad',
-    path: '/traceability',
-    icon: 'GitBranch',
-    description: 'Sistema de trazabilidad blockchain',
-  },
-  {
-    id: 'esg',
-    name: 'ESG',
-    path: '/esg',
-    icon: 'Leaf',
-    description: 'Métricas ambientales y Copper Mark',
+    category: 'inicio',
   },
   {
     id: 'reports',
@@ -89,13 +52,23 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/reports',
     icon: 'BarChart',
     description: 'Informes gráficos y reportes REP',
+    category: 'inicio',
   },
   {
-    id: 'manual',
-    name: 'Manual',
-    path: '/manual',
-    icon: 'BookOpen',
-    description: 'Manual y borradores para empresas',
+    id: 'certifications',
+    name: 'Certificaciones',
+    path: '/certifications',
+    icon: 'Award',
+    description: 'Gestión de certificaciones REP',
+    category: 'certificacion',
+  },
+  {
+    id: 'cps',
+    name: 'Sistemas CPS',
+    path: '/cps',
+    icon: 'Package',
+    description: 'Certificación de Productos y Servicios',
+    category: 'certificacion',
   },
   {
     id: 'packaging',
@@ -103,6 +76,7 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/packaging',
     icon: 'Box',
     description: 'Certificación de embalajes',
+    category: 'certificacion',
   },
   {
     id: 'shipments',
@@ -110,6 +84,63 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/shipments',
     icon: 'Truck',
     description: 'Gestión de despachos certificados',
+    category: 'certificacion',
+  },
+  {
+    id: 'traceability',
+    name: 'Trazabilidad',
+    path: '/traceability',
+    icon: 'GitBranch',
+    description: 'Sistema de trazabilidad blockchain',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'esg',
+    name: 'ESG',
+    path: '/esg',
+    icon: 'Leaf',
+    description: 'Métricas ambientales y Copper Mark',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'validate-qr',
+    name: 'Validar QR',
+    path: '/validate-qr',
+    icon: 'QrCode',
+    description: 'Validación de códigos QR',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'validate-nfc',
+    name: 'Validar NFC',
+    path: '/validate-nfc',
+    icon: 'Wifi',
+    description: 'Validación de tags NFC',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'manual',
+    name: 'Manual',
+    path: '/manual',
+    icon: 'BookOpen',
+    description: 'Manual y borradores para empresas',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'providers',
+    name: 'Proveedores',
+    path: '/providers',
+    icon: 'Building2',
+    description: 'Gestión de proveedores',
+    category: 'cumplimiento',
+  },
+  {
+    id: 'providers-directory',
+    name: 'Directorio Certificados',
+    path: '/providers-directory',
+    icon: 'BookOpen',
+    description: 'Directorio de proveedores certificados',
+    category: 'cumplimiento',
   },
   {
     id: 'roles',
@@ -117,6 +148,7 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/roles',
     icon: 'Users',
     description: 'Gestión de roles del sistema',
+    category: 'administracion',
     isAdmin: true,
   },
   {
@@ -125,6 +157,7 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/user-management',
     icon: 'UserCog',
     description: 'Administración de usuarios',
+    category: 'administracion',
     isAdmin: true,
   },
   {
@@ -133,21 +166,8 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     path: '/login-settings',
     icon: 'Settings',
     description: 'Personalización de pantalla de login',
+    category: 'administracion',
     isAdmin: true,
-  },
-  {
-    id: 'validate-qr',
-    name: 'Validar QR',
-    path: '/validate-qr',
-    icon: 'QrCode',
-    description: 'Validación de códigos QR',
-  },
-  {
-    id: 'validate-nfc',
-    name: 'Validar NFC',
-    path: '/validate-nfc',
-    icon: 'Wifi',
-    description: 'Validación de tags NFC',
   },
 ];
 

@@ -29,9 +29,15 @@ import {
   BarChart,
   type LucideIcon
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { getUserPanels, AVAILABLE_PANELS } from "@shared/panel-permissions";
+import { getUserPanels, AVAILABLE_PANELS, type PanelCategory } from "@shared/panel-permissions";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   LayoutDashboard,
@@ -51,6 +57,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
   BarChart,
 };
 
+const CATEGORY_LABELS: Record<PanelCategory, string> = {
+  inicio: '🏠 Inicio & Seguimiento',
+  certificacion: '📋 Certificación REP',
+  cumplimiento: '✅ Cumplimiento & Validación',
+  administracion: '⚙️ Administración',
+};
+
 export function AppSidebar() {
   const [location] = useLocation();
   
@@ -68,8 +81,17 @@ export function AppSidebar() {
       isActive: location === panel.path,
     }));
 
-  const mainPanels = availableMenuItems.filter(item => !item.isAdmin);
-  const adminPanels = availableMenuItems.filter(item => item.isAdmin);
+  // Agrupar paneles por categoría
+  const panelsByCategory = availableMenuItems.reduce((acc, panel) => {
+    if (!acc[panel.category]) {
+      acc[panel.category] = [];
+    }
+    acc[panel.category].push(panel);
+    return acc;
+  }, {} as Record<PanelCategory, typeof availableMenuItems>);
+
+  // Orden de categorías
+  const categoryOrder: PanelCategory[] = ['inicio', 'certificacion', 'cumplimiento', 'administracion'];
 
   return (
     <Sidebar>
@@ -86,64 +108,51 @@ export function AppSidebar() {
       </SidebarHeader>
       
       <SidebarContent>
-        {mainPanels.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Menú Principal</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {mainPanels.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={item.isActive}
-                        data-testid={`sidebar-${item.id}`}
-                      >
-                        <Link href={item.path}>
-                          <Icon className="w-4 h-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-        
-        {adminPanels.length > 0 && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Administración</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminPanels.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton 
-                        asChild 
-                        isActive={item.isActive}
-                        data-testid={`sidebar-${item.id}`}
-                      >
-                        <Link href={item.path}>
-                          <Icon className="w-4 h-4" />
-                          <span>{item.name}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
+        <TooltipProvider delayDuration={300}>
+          {categoryOrder.map((category) => {
+            const panels = panelsByCategory[category];
+            if (!panels || panels.length === 0) return null;
+
+            return (
+              <SidebarGroup key={category}>
+                <SidebarGroupLabel>{CATEGORY_LABELS[category]}</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {panels.map((panel) => {
+                      const Icon = panel.icon;
+                      return (
+                        <SidebarMenuItem key={panel.id}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <SidebarMenuButton 
+                                asChild 
+                                isActive={panel.isActive}
+                                data-testid={`sidebar-${panel.id}`}
+                              >
+                                <Link href={panel.path}>
+                                  <Icon className="w-4 h-4" />
+                                  <span>{panel.name}</span>
+                                </Link>
+                              </SidebarMenuButton>
+                            </TooltipTrigger>
+                            <TooltipContent side="right" className="max-w-xs">
+                              <p className="text-sm">{panel.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            );
+          })}
+        </TooltipProvider>
       </SidebarContent>
       
       <SidebarFooter className="border-t p-4">
         <div className="text-xs text-muted-foreground">
-          <div className="font-mono">v3.2.0</div>
+          <div className="font-mono">v3.3.0</div>
           <div>Ley 20.920 - Chile</div>
           {user && (
             <div className="mt-2 pt-2 border-t">
