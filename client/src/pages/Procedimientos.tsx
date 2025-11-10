@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
   FileText, 
@@ -239,9 +239,104 @@ export default function Procedimientos() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <Alert className="bg-primary/10 border-primary">
+                <CheckCircle className="h-4 w-4" />
+                <AlertTitle>Guía Rápida para Evaluadores</AlertTitle>
+                <AlertDescription className="text-sm mt-2">
+                  <ol className="list-decimal list-inside space-y-2">
+                    <li><strong>Ir a Solicitudes:</strong> Click en "Solicitudes" en el menú lateral (categoría Administración)</li>
+                    <li><strong>Seleccionar solicitud:</strong> Click en "Ver Detalles" de cualquier solicitud pendiente</li>
+                    <li><strong>Revisar datos:</strong> Verificar RUT, documentos adjuntos y elegibilidad REP</li>
+                    <li><strong>Descargar documentos:</strong> Click en los botones de descarga para revisar archivos PDF/JPG</li>
+                    <li><strong>Decidir:</strong> Click en "Aprobar" (si cumple criterios) o "Rechazar" (si falta información)</li>
+                    <li><strong>Confirmar:</strong> En el diálogo de confirmación, click en "Confirmar" para procesar</li>
+                  </ol>
+                </AlertDescription>
+              </Alert>
+
               <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="guia-paso">
+                  <AccordionTrigger>🎯 Paso a Paso: Cómo Evaluar una Solicitud</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <div className="space-y-4">
+                      <div className="border-l-4 border-primary pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 1: Acceder al Panel</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• Abrir menú lateral → Categoría "Administración" → Click en "Solicitudes"</li>
+                          <li>• Verá listado de todas las solicitudes (pending, approved, rejected)</li>
+                          <li>• Use los filtros de estado para ver solo solicitudes pendientes</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-4 border-blue-500 pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 2: Revisar Datos de la Empresa</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• <strong>RUT:</strong> Verificar formato chileno (XX.XXX.XXX-X) y validar dígito verificador</li>
+                          <li>• <strong>Nombre:</strong> Confirmar que coincide con registros SII</li>
+                          <li>• <strong>Industria:</strong> Verificar que sea Minería o Energía Renovable</li>
+                          <li>• <strong>Email/Teléfono:</strong> Deben ser datos válidos y verificables</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-4 border-green-500 pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 3: Revisar Documentos Adjuntos</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• Click en los botones "Descargar" junto a cada documento</li>
+                          <li>• <strong>Documentos requeridos:</strong></li>
+                          <li className="ml-4">- Certificado de Inicio de Actividades (SII)</li>
+                          <li className="ml-4">- Declaración jurada de envases/embalajes</li>
+                          <li className="ml-4">- Fichas técnicas de productos</li>
+                          <li>• Verificar que los archivos sean legibles y estén completos</li>
+                          <li>• Si no hay documentos adjuntos, la solicitud debe ser RECHAZADA</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-4 border-orange-500 pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 4: Verificar Elegibilidad REP (Ley 20.920)</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• <strong>Umbral de peso:</strong> La empresa debe introducir más de 300 kg/año de envases</li>
+                          <li>• <strong>Sector aplicable:</strong> Minería y Energía Renovable están cubiertos</li>
+                          <li>• <strong>Sanciones:</strong> Verificar que no tenga multas SMA pendientes</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-4 border-purple-500 pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 5: Tomar Decisión</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• <strong>Si APRUEBA:</strong> Click en botón verde "Aprobar Solicitud"</li>
+                          <li className="ml-4">→ El sistema creará automáticamente: empresa, usuario y certificación</li>
+                          <li className="ml-4">→ Se enviará email con credenciales al contacto</li>
+                          <li className="ml-4">→ Inicia workflow de certificación de 10 fases</li>
+                          <li>• <strong>Si RECHAZA:</strong> Click en botón rojo "Rechazar Solicitud"</li>
+                          <li className="ml-4">→ Debe especificar el motivo del rechazo</li>
+                          <li className="ml-4">→ La empresa recibirá email con las razones</li>
+                          <li className="ml-4">→ Puede volver a solicitar corrigiendo errores</li>
+                        </ul>
+                      </div>
+
+                      <div className="border-l-4 border-red-500 pl-4 space-y-2">
+                        <p className="font-semibold text-sm">Paso 6: Confirmar Acción</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          <li>• Aparecerá un diálogo de confirmación</li>
+                          <li>• Revise la acción que está por realizar</li>
+                          <li>• Click en "Confirmar" para procesar (o "Cancelar" si cambió de opinión)</li>
+                          <li>• El proceso es <strong>irreversible</strong> una vez confirmado</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <Alert className="bg-yellow-50 dark:bg-yellow-900/20 border-yellow-500">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription className="text-sm">
+                        <strong>Importante:</strong> Cada solicitud debe evaluarse en un plazo máximo de 2-3 días hábiles.
+                        Priorice solicitudes más antiguas primero.
+                      </AlertDescription>
+                    </Alert>
+                  </AccordionContent>
+                </AccordionItem>
+
                 <AccordionItem value="acceso">
-                  <AccordionTrigger>1. Acceso al Panel de Solicitudes</AccordionTrigger>
+                  <AccordionTrigger>2. Acceso al Panel de Solicitudes</AccordionTrigger>
                   <AccordionContent className="space-y-3">
                     <p className="text-sm">Navegue a <code className="bg-muted px-2 py-1 rounded">/admin/solicitudes</code> desde el menú lateral.</p>
                     <div className="bg-muted p-3 rounded-md text-sm space-y-2">
@@ -256,7 +351,7 @@ export default function Procedimientos() {
                 </AccordionItem>
 
                 <AccordionItem value="revision">
-                  <AccordionTrigger>2. Revisión de Solicitudes Pendientes</AccordionTrigger>
+                  <AccordionTrigger>3. Criterios de Evaluación</AccordionTrigger>
                   <AccordionContent className="space-y-4">
                     <div className="space-y-3">
                       <p className="text-sm font-medium">Criterios de Evaluación:</p>
@@ -301,7 +396,7 @@ export default function Procedimientos() {
                 </AccordionItem>
 
                 <AccordionItem value="aprobacion">
-                  <AccordionTrigger>3. Proceso de Aprobación</AccordionTrigger>
+                  <AccordionTrigger>4. Proceso de Aprobación</AccordionTrigger>
                   <AccordionContent className="space-y-4">
                     <div className="space-y-3 text-sm">
                       <p className="font-medium">Al aprobar una solicitud, el sistema ejecuta automáticamente:</p>
@@ -354,7 +449,7 @@ export default function Procedimientos() {
                 </AccordionItem>
 
                 <AccordionItem value="rechazo">
-                  <AccordionTrigger>4. Proceso de Rechazo</AccordionTrigger>
+                  <AccordionTrigger>5. Proceso de Rechazo</AccordionTrigger>
                   <AccordionContent className="space-y-3">
                     <p className="text-sm">Cuando una solicitud no cumple los requisitos:</p>
                     <div className="space-y-2 text-sm">
@@ -389,7 +484,7 @@ export default function Procedimientos() {
                 </AccordionItem>
 
                 <AccordionItem value="filtros">
-                  <AccordionTrigger>5. Uso de Filtros y Búsqueda</AccordionTrigger>
+                  <AccordionTrigger>6. Uso de Filtros y Búsqueda</AccordionTrigger>
                   <AccordionContent className="space-y-3">
                     <p className="text-sm">El panel permite filtrar solicitudes por estado:</p>
                     <div className="grid grid-cols-3 gap-3">

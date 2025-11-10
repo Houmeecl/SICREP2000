@@ -7,8 +7,10 @@ SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibilit
 **Latest Updates (November 2025):**
 - ✅ **NEW: Manual de Procedimientos SICREP** - Hub completo de conocimiento en `/procedimientos`
   - 6 tabs especializadas: Empresas, Administradores, Workflow, Roles, Trazabilidad, Soporte
-  - Guía paso a paso para solicitantes (4 fases detalladas)
-  - Procedimientos admin con criterios de evaluación y aprobación
+  - **Guía Rápida para Evaluadores** con 6 pasos prácticos (qué hacer, dónde hacer click)
+  - **Paso a Paso detallado**: Cómo evaluar una solicitud (acceder, revisar, descargar, decidir)
+  - Instrucciones específicas: qué revisar, qué documentos descargar, cómo aprobar/rechazar
+  - Procedimientos admin con criterios de evaluación y aprobación completos
   - Workflow de 10 fases documentado con tiempos, responsables y entregables
   - Matriz de 15 roles con niveles de acceso
   - Procedimientos NFC/QR y blockchain
