@@ -230,7 +230,7 @@ function Router() {
 
 export default function App() {
   const [location] = useLocation();
-  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location === "/solicitar-certificacion" || location.startsWith("/validate/") || location === "/validate-nfc";
+  const isPublicRoute = location === "/" || location === "/login" || location === "/verify" || location === "/solicitar-certificacion" || location === "/auto-evaluacion" || location === "/procedimientos" || location.startsWith("/validate/") || location === "/validate-nfc";
   
   const style = {
     "--sidebar-width": "16rem",
