@@ -31,6 +31,7 @@ import ValidateNFC from "@/pages/ValidateNFC";
 import LoginSettings from "@/pages/LoginSettings";
 import Reports from "@/pages/Reports";
 import Manual from "@/pages/Manual";
+import Procedimientos from "@/pages/Procedimientos";
 import SolicitarCertificacion from "@/pages/SolicitarCertificacion";
 import Solicitudes from "@/pages/admin/Solicitudes";
 import NotFound from "@/pages/not-found";
@@ -139,6 +140,7 @@ function Router() {
           <Manual />
         </ProtectedRoute>
       </Route>
+      <Route path="/procedimientos" component={Procedimientos} />
       
       {/* Role-specific Dashboards */}
       <Route path="/dashboard/admin">

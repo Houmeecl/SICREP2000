@@ -55,6 +55,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wifi,
   Settings,
   BarChart,
+  ClipboardCheck,
 };
 
 const CATEGORY_LABELS: Record<PanelCategory, string> = {

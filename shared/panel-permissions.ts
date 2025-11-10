@@ -13,6 +13,7 @@ export type PanelId =
   | 'esg'
   | 'reports'
   | 'manual'
+  | 'procedimientos'
   | 'roles'
   | 'user-management'
   | 'login-settings'
@@ -128,6 +129,14 @@ export const AVAILABLE_PANELS: PanelConfig[] = [
     category: 'cumplimiento',
   },
   {
+    id: 'procedimientos',
+    name: 'Procedimientos',
+    path: '/procedimientos',
+    icon: 'ClipboardCheck',
+    description: 'Guía completa de procedimientos REP',
+    category: 'cumplimiento',
+  },
+  {
     id: 'providers',
     name: 'Proveedores',
     path: '/providers',
@@ -195,6 +204,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'esg',
     'reports',
     'manual',
+    'procedimientos',
     'packaging',
     'shipments',
     'roles',
@@ -212,6 +222,7 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'esg',
     'reports',
     'manual',
+    'procedimientos',
     'traceability',
   ],
   manager_operaciones: [
@@ -222,20 +233,21 @@ export const DEFAULT_PANELS_BY_ROLE: Record<string, PanelId[]> = {
     'packaging',
     'shipments',
     'reports',
+    'procedimientos',
     'traceability',
   ],
-  cps: ['dashboard', 'cps', 'certifications', 'packaging'],
-  evaluador: ['dashboard', 'certifications', 'cps'],
-  auditor: ['dashboard', 'certifications', 'providers', 'esg', 'reports', 'traceability'],
-  comite: ['dashboard', 'certifications', 'providers-directory', 'esg', 'reports'],
-  proveedor: ['dashboard', 'shipments', 'certifications', 'validate-qr'],
-  cliente_mineria: ['dashboard', 'shipments', 'esg', 'providers-directory'], // Solo ven sus despachos
-  viewer: ['dashboard', 'providers-directory', 'validate-qr', 'validate-nfc'],
-  analista: ['dashboard', 'esg', 'certifications', 'reports', 'traceability'],
-  coordinador: ['dashboard', 'certifications', 'providers', 'shipments', 'reports'],
-  tecnico: ['dashboard', 'certifications', 'validate-qr', 'validate-nfc'],
-  inspector: ['dashboard', 'certifications', 'traceability', 'validate-nfc'],
-  supervisor: ['dashboard', 'certifications', 'providers', 'shipments', 'reports', 'traceability'],
+  cps: ['dashboard', 'cps', 'certifications', 'packaging', 'procedimientos'],
+  evaluador: ['dashboard', 'certifications', 'cps', 'procedimientos'],
+  auditor: ['dashboard', 'certifications', 'providers', 'esg', 'reports', 'procedimientos', 'traceability'],
+  comite: ['dashboard', 'certifications', 'providers-directory', 'esg', 'reports', 'procedimientos'],
+  proveedor: ['dashboard', 'shipments', 'certifications', 'procedimientos', 'validate-qr'],
+  cliente_mineria: ['dashboard', 'shipments', 'esg', 'providers-directory', 'procedimientos'], // Solo ven sus despachos
+  viewer: ['dashboard', 'providers-directory', 'procedimientos', 'validate-qr', 'validate-nfc'],
+  analista: ['dashboard', 'esg', 'certifications', 'reports', 'procedimientos', 'traceability'],
+  coordinador: ['dashboard', 'certifications', 'providers', 'shipments', 'reports', 'procedimientos'],
+  tecnico: ['dashboard', 'certifications', 'procedimientos', 'validate-qr', 'validate-nfc'],
+  inspector: ['dashboard', 'certifications', 'traceability', 'procedimientos', 'validate-nfc'],
+  supervisor: ['dashboard', 'certifications', 'providers', 'shipments', 'reports', 'procedimientos', 'traceability'],
 };
 
 /**
