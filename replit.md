@@ -19,6 +19,7 @@ SICREP is a comprehensive SaaS platform for REP (Extended Producer Responsibilit
 - ✅ **NEW: Expansión a sector energía** - Plataforma ahora cubre minería y energía
 - ✅ **NEW: Calculadora de Cumplimiento REP interactiva** - Slider dinámico con cálculo de obligaciones y multas
 - ✅ **NEW: Demo Trazabilidad NFC/QR** - Simulador completo de generación y validación de códigos QR
+- ✅ **NEW: Sistema de navegación mejorado** - Sidebar con categorías, breadcrumbs y botones "Volver"
 
 The platform addresses a critical legal paradox: companies introducing less than 300kg of packaging annually are exempt from collection targets but still required to report accurate weight/materiality data to RETC (Registro de Emisiones y Transferencia de Contaminantes). Non-compliance can result in fines from SMA (Superintendencia del Medio Ambiente) ranging from 1 to 10,000 UTA (up to $6.2M CLP).
 
@@ -82,12 +83,18 @@ Preferred communication style: Simple, everyday language.
 - No global state management library (Redux, Zustand) - relies on React Query + Context
 
 **Key UI Components:**
-- `AppSidebar`: 280px fixed navigation with role-based menu items
+- `AppSidebar`: 280px fixed navigation with role-based menu items, grouped by 4 categories:
+  - 🏠 Inicio & Seguimiento (dashboard, reports)
+  - 📋 Certificación REP (certifications, CPS, packaging, shipments)
+  - ✅ Cumplimiento & Validación (traceability, ESG, validate-qr, validate-nfc, manual, providers, directory)
+  - ⚙️ Administración (roles, users, login settings)
+- `AppBreadcrumbs`: Hierarchical breadcrumb navigation in header showing current location
 - `ProtectedRoute`: Route guard with role-based access control
 - Dashboard components: Stats, Workflow, CPS Catalog, NFC Traceability, ESG Metrics
 - Role-specific views: 15 distinct user roles (admin, evaluator, auditor, provider, mining client, etc.)
 - **Manual page**: 3-tab professional materials (Grandes Empresas, Asociaciones, Borradores PDF)
 - **TraceabilityLanding**: Public verification page with NFC/workflow timeline visualization
+- **Navigation enhancements**: Tooltips on sidebar items, "Volver" buttons on key pages, breadcrumbs with parent hierarchy
 
 ### Backend Architecture
 
