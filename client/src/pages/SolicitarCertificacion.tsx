@@ -65,6 +65,8 @@ export default function SolicitarCertificacion() {
     }
   });
 
+  const documentsError = form.formState.errors.documents;
+
   const submitMutation = useMutation({
     mutationFn: async (data: RequestFormData) => {
       const formData = new FormData();
@@ -240,7 +242,7 @@ export default function SolicitarCertificacion() {
                       placeholder="Ej: Minera del Norte S.A."
                     />
                     {form.formState.errors.companyName && (
-                      <p className="text-sm text-destructive">{form.formState.errors.companyName.message}</p>
+                      <p className="text-sm text-destructive">{form.formState.errors.companyName?.message}</p>
                     )}
                   </div>
 
@@ -254,7 +256,7 @@ export default function SolicitarCertificacion() {
                         placeholder="12345678-9"
                       />
                       {form.formState.errors.companyRut && (
-                        <p className="text-sm text-destructive">{form.formState.errors.companyRut.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.companyRut?.message}</p>
                       )}
                     </div>
 
@@ -272,7 +274,7 @@ export default function SolicitarCertificacion() {
                         </SelectContent>
                       </Select>
                       {form.formState.errors.industry && (
-                        <p className="text-sm text-destructive">{form.formState.errors.industry.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.industry?.message}</p>
                       )}
                     </div>
                   </div>
@@ -288,7 +290,7 @@ export default function SolicitarCertificacion() {
                         placeholder="contacto@empresa.cl"
                       />
                       {form.formState.errors.companyEmail && (
-                        <p className="text-sm text-destructive">{form.formState.errors.companyEmail.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.companyEmail?.message}</p>
                       )}
                     </div>
 
@@ -301,7 +303,7 @@ export default function SolicitarCertificacion() {
                         placeholder="+56912345678"
                       />
                       {form.formState.errors.companyPhone && (
-                        <p className="text-sm text-destructive">{form.formState.errors.companyPhone.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.companyPhone?.message}</p>
                       )}
                     </div>
                   </div>
@@ -316,7 +318,7 @@ export default function SolicitarCertificacion() {
                       rows={3}
                     />
                     {form.formState.errors.companyAddress && (
-                      <p className="text-sm text-destructive">{form.formState.errors.companyAddress.message}</p>
+                      <p className="text-sm text-destructive">{form.formState.errors.companyAddress?.message}</p>
                     )}
                   </div>
 
@@ -351,7 +353,7 @@ export default function SolicitarCertificacion() {
                       placeholder="Ej: Juan Pérez González"
                     />
                     {form.formState.errors.contactName && (
-                      <p className="text-sm text-destructive">{form.formState.errors.contactName.message}</p>
+                      <p className="text-sm text-destructive">{form.formState.errors.contactName?.message}</p>
                     )}
                   </div>
 
@@ -366,7 +368,7 @@ export default function SolicitarCertificacion() {
                         placeholder="juan.perez@empresa.cl"
                       />
                       {form.formState.errors.contactEmail && (
-                        <p className="text-sm text-destructive">{form.formState.errors.contactEmail.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.contactEmail?.message}</p>
                       )}
                     </div>
 
@@ -379,7 +381,7 @@ export default function SolicitarCertificacion() {
                         placeholder="+56912345678"
                       />
                       {form.formState.errors.contactPhone && (
-                        <p className="text-sm text-destructive">{form.formState.errors.contactPhone.message}</p>
+                        <p className="text-sm text-destructive">{form.formState.errors.contactPhone?.message}</p>
                       )}
                     </div>
                   </div>
@@ -450,7 +452,7 @@ export default function SolicitarCertificacion() {
                     </Label>
                   </div>
                   {form.formState.errors.manualConfirmed && (
-                    <p className="text-sm text-destructive">{form.formState.errors.manualConfirmed.message}</p>
+                    <p className="text-sm text-destructive">{form.formState.errors.manualConfirmed?.message}</p>
                   )}
 
                   <div className="space-y-2">
@@ -479,8 +481,8 @@ export default function SolicitarCertificacion() {
                         PDF, JPG o PNG - Máximo 5 archivos de 5MB cada uno
                       </p>
                     </div>
-                    {form.formState.errors.documents && (
-                      <p className="text-sm text-destructive">{form.formState.errors.documents.message}</p>
+                    {documentsError && (
+                      <p className="text-sm text-destructive">{documentsError.message}</p>
                     )}
                   </div>
 
